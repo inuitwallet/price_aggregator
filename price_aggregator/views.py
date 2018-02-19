@@ -18,3 +18,12 @@ class PriceView(View):
         ).first()
 
         return JsonResponse(agg_price.serialize())
+
+
+class CurrenciesView(View):
+    @staticmethod
+    def get(request):
+        return JsonResponse(
+            [{'name': coin.name, 'code': coin.code} for coin in Currency.objects.all()],
+            safe=False
+        )

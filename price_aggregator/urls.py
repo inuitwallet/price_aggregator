@@ -15,12 +15,13 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 
-from price_aggregator.views import PriceView
+import price_aggregator.views as views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('price/<str:currency_code>', PriceView.as_view())
+    path('price/<str:currency_code>', views.PriceView.as_view()),
+    path('currencies', views.CurrenciesView.as_view())
 ]
