@@ -34,6 +34,8 @@ class Command(BaseCommand):
                 logger.error('No provider named {}'.format(provider_name))
                 continue
 
+            logger.info('Working on provider {}'.format(provider_name))
+
             # see if the cache time has lapsed
             last_response = ProviderResponse.objects.filter(
                 provider=provider
