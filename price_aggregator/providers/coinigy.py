@@ -99,6 +99,7 @@ class Coinigy(object):
                             ticker_data
                         )
                     )
+                    continue
 
                 if pair[0] not in prices:
                     prices[pair[0]] = []
