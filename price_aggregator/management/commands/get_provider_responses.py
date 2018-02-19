@@ -11,11 +11,28 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '-p',
+            '--provider',
+            help='The provider to get a response from',
+            dest='provider'
+        )
+
     def handle(self, *args, **options):
+        if options['provider']:
+            providers_names = [options['provider']]
+        else:
+            providers_names = providers.__all__
+
         currencies = Currency.objects.all()
 
-        for provider_name in providers.__all__:
-            provider = Provider.objects.get(name=provider_name)
+        for provider_name in providers_names:
+            try:
+                provider = Provider.objects.get(name=provider_name)
+            except Provider.DoesNotExist:
+                logger.error('No provider named {}'.format(provider_name))
+                continue
 
             # see if the cache time has lapsed
             last_response = ProviderResponse.objects.filter(
@@ -37,10 +54,10 @@ class Command(BaseCommand):
                     continue
 
             provider_wrapper = getattr(providers, provider_name)
-            prices, message = provider_wrapper.get_prices(currencies)
+            prices, message = provider_wrapper.get_prices(currencies=currencies)
 
             if prices is None:
-                logger.error('{} failure'.format(provider))
+                logger.error('{} failure: {}'.format(provider, message))
                 ProviderFailure.objects.create(
                     provider=provider,
                     message=message
