@@ -16,20 +16,18 @@ class Command(BaseCommand):
             logger.info('Working on {}'.format(currency))
 
             # get the distinct providers from the provider responses
-            prices = list(
-                ProviderResponse.objects.filter(
-                    currency=currency,
-                    update_by__gte=now()
-                ).values_list(
-                    'value', flat=True
-                )
+            valid_responses = ProviderResponse.objects.filter(
+                currency=currency,
+                update_by__gte=now()
+            ).values_list(
+                'value', flat=True
             )
 
-            print(prices)
-
-            if not prices:
+            if valid_responses.count() == 0:
                 logger.warning('Got no valid responses for {}'.format(currency))
                 continue
+
+            prices = list(valid_responses)
 
             # save an aggregated price
             agg_price = mean(prices)
