@@ -13,8 +13,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for currency in Currency.objects.all():
-
-            prices = []
+            logger.info('Working on {}'.format(currency))
 
             # get the distinct providers from the provider responses
             valid_responses = ProviderResponse.objects.filter(
