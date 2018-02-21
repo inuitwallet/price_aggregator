@@ -4,9 +4,7 @@ from statistics import mean, stdev, variance
 from django.core.management import BaseCommand
 from django.utils.timezone import now
 
-from price_aggregator import providers
-from price_aggregator.models import Currency, AggregatedPrice, ProviderFailure, \
-    ProviderResponse
+from price_aggregator.models import Currency, AggregatedPrice, ProviderResponse
 
 logger = logging.getLogger(__name__)
 
@@ -35,17 +33,10 @@ class Command(BaseCommand):
 
             logger.info('Got aggregated price of {} for {}'.format(agg_price, currency))
 
-            AggregatedPrice.objects.create(
+            agg_price_object, _ = AggregatedPrice.objects.create(
                 currency=currency,
                 aggregated_price=agg_price,
                 providers=len(prices),
                 standard_deviation=stdev(prices, agg_price) if len(prices) > 1 else 0,
                 variance=variance(prices, agg_price) if len(prices) > 1 else 0,
             )
-
-
-
-
-
-
-

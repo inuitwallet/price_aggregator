@@ -101,11 +101,12 @@ class AggregatedPrice(models.Model):
     def serialize(self):
         return {
             'currency': self.currency.code,
+            'currency_name': self.currency.name,
             'aggregation_date_time': self.date_time,
-            'aggregated_usd_price': self.aggregated_price,
-            'number_of_providers': self.providers,
-            'standard_deviation': self.standard_deviation,
-            'variance': self.variance
+            'aggregated_usd_price': float('{:.8f}'.format(self.aggregated_price)),
+            'number_of_providers': float('{:.0f}'.format(self.providers)),
+            'standard_deviation': float('{:.8f}'.format(self.standard_deviation)),
+            'variance': float('{:.8f}'.format(self.variance))
         }
 
 
