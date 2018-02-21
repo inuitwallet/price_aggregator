@@ -16,12 +16,16 @@ class Command(BaseCommand):
             logger.info('Working on {}'.format(currency))
 
             # get the distinct providers from the provider responses
-            valid_responses = ProviderResponse.objects.filter(
-                currency=currency,
-                update_by__gte=now()
+            prices = list(
+                ProviderResponse.objects.filter(
+                    currency=currency,
+                    update_by__gte=now()
+                ).values_list(
+                    'value', flat=True
+                )
             )
 
-            prices = [response.value for response in valid_responses]
+            print(prices)
 
             if not prices:
                 logger.warning('Got no valid responses for {}'.format(currency))
@@ -32,7 +36,7 @@ class Command(BaseCommand):
 
             logger.info('Got aggregated price of {} for {}'.format(agg_price, currency))
 
-            agg_price_object, _ = AggregatedPrice.objects.create(
+            AggregatedPrice.objects.create(
                 currency=currency,
                 aggregated_price=agg_price,
                 providers=len(prices),
