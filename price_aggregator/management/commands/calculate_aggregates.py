@@ -40,9 +40,15 @@ class Command(BaseCommand):
             logger.info('Working on {}'.format(currency))
 
             # get the distinct providers from the provider responses
+            # this query ensures we get only the latest price from each provider
             valid_responses = ProviderResponse.objects.filter(
                 currency=currency,
                 update_by__gte=now()
+            ).order_by(
+                'provider',
+                '-date_time'
+            ).distinct(
+                'provider'
             )
 
             if valid_responses.count() == 0:
