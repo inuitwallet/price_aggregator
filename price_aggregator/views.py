@@ -57,7 +57,7 @@ class PriceView(View):
             else:
                 del agg_price['moving_averages'][period]
 
-        return JsonResponse(agg_price)
+        return JsonResponse(agg_price, json_dumps_params={'sort_keys': True})
 
 
 class CurrenciesView(View):
@@ -77,7 +77,7 @@ class CurrenciesView(View):
             )
             response[currency.code] = list(supported_providers)
 
-        return JsonResponse(response)
+        return JsonResponse(response, json_dumps_params={'sort_keys': True})
 
 
 class ProvidersView(View):
@@ -97,4 +97,4 @@ class ProvidersView(View):
             )
             response[provider.name] = list(supported_currencies)
 
-        return JsonResponse(response)
+        return JsonResponse(response, json_dumps_params={'sort_keys': True})
