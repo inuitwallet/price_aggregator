@@ -97,6 +97,9 @@ class AggregatedPrice(models.Model):
         max_digits=25,
         default=0
     )
+    used_responses = models.ManyToManyField(
+        ProviderResponse
+    )
 
     def serialize(self):
         return {
@@ -106,7 +109,14 @@ class AggregatedPrice(models.Model):
             'aggregated_usd_price': float('{:.8f}'.format(self.aggregated_price)),
             'number_of_providers': float('{:.0f}'.format(self.providers)),
             'standard_deviation': float('{:.8f}'.format(self.standard_deviation)),
-            'variance': float('{:.8f}'.format(self.variance))
+            'variance': float('{:.8f}'.format(self.variance)),
+            'prices_used': [
+                {
+                    'name': resp.provider.name,
+                    'value': float('{:.8f}'.format(resp.value)),
+                    'collection_date_time': resp.date_time
+                } for resp in self.used_responses.all()
+            ]
         }
 
 
