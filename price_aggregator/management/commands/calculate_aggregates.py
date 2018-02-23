@@ -13,7 +13,10 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     def remove_outliers(self, valid_responses, num_stdev=1.0):
         if valid_responses.count() <= 2:
-            return valid_responses
+            return [resp for resp in valid_responses]
+
+        if num_stdev > 60:
+            return [resp for resp in valid_responses]
 
         cleaned_responses = []
         prices = [resp.value for resp in valid_responses]
