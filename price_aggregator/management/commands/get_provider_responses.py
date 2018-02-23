@@ -51,9 +51,9 @@ class Command(BaseCommand):
                 # With it we get some overlap although cache times may need to be tweaked
                 if (now() + timedelta(minutes=2)) < cache_time:
                     logger.warning(
-                        'Cache time not yet elapsed for {}. Wait until {}'.format(
+                        'Cache not yet expired for {}. Wait until {}'.format(
                             provider,
-                            cache_time
+                            cache_time - timedelta(minutes=2)
                         )
                     )
                     continue
