@@ -3,6 +3,7 @@ from .bitstamp import BitStamp
 from .bitstamp_eur import BitStampEur
 from .coinapi import CoinApi
 from .coinbase import CoinBase
+from .coindesk import CoinDesk
 from .coinigy import Coinigy
 from .coinmarketcap import CoinMarketCap
 from .cryptocompare import CryptoCompare
@@ -19,6 +20,7 @@ __all__ = [
     'BitStampEur',
     'CoinApi',
     'CoinBase',
+    'CoinDesk',
     'Coinigy',
     'CoinMarketCap',
     'CryptoCompare',
