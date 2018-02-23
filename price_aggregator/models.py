@@ -114,7 +114,8 @@ class AggregatedPrice(models.Model):
                 {
                     'name': resp.provider.name,
                     'value': float('{:.8f}'.format(resp.value)),
-                    'collection_date_time': resp.date_time
+                    'collection_date_time': resp.date_time,
+                    'cache_seconds': float('{:0f}'.format(resp.provider.cache))
                 } for resp in self.used_responses.all()
             ]
         }
