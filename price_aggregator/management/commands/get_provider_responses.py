@@ -46,7 +46,10 @@ class Command(BaseCommand):
             if last_response:
                 cache_time = last_response.date_time + timedelta(seconds=provider.cache)
 
-                if now() < cache_time:
+                # use the timedelta to check if the cache is about to expire.
+                # Without this we get gaps in provider data.
+                # With it we get some overlap although cache times may need to be tweaked
+                if (now() + timedelta(minutes=2)) < cache_time:
                     logger.warning(
                         'Cache time not yet elapsed for {}. Wait until {}'.format(
                             provider,
