@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
         for provider_name in providers_names:
             try:
-                provider = Provider.objects.get(name=provider_name)
+                provider = Provider.objects.get(name__iexact=provider_name)
             except Provider.DoesNotExist:
                 logger.error('No provider named {}'.format(provider_name))
                 continue
@@ -58,7 +58,7 @@ class Command(BaseCommand):
                     )
                     continue
 
-            provider_wrapper = getattr(providers, provider_name)
+            provider_wrapper = getattr(providers, provider.name)
             prices, message = provider_wrapper.get_prices(currencies=currencies)
 
             if prices is None:
