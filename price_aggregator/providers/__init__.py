@@ -1,3 +1,4 @@
+from .bitcoinaverage import BitcoinAverage
 from .bitfinex import Bitfinex
 from .bitstamp import BitStamp
 from .bitstamp_eur import BitStampEur
@@ -15,6 +16,7 @@ from .fixer import Fixer
 from .openexchangerates import OpenExchangeRates
 
 __all__ = [
+    'BitcoinAverage',
     'Bitfinex',
     'BitStamp',
     'BitStampEur',
