@@ -1,9 +1,7 @@
-import json
 import logging
 from decimal import Decimal
 
 import requests
-from django.conf import settings
 
 logger = logging.getLogger(__name__)
 

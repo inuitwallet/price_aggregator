@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 logger.error('No provider named {}'.format(provider_name))
                 continue
 
-            logger.info('Working on provider {}'.format(provider_name))
+            logger.info('Working on provider {}'.format(provider.name))
 
             # see if the cache time has lapsed
             last_response = ProviderResponse.objects.filter(
@@ -49,11 +49,13 @@ class Command(BaseCommand):
                 # use the timedelta to check if the cache is about to expire.
                 # Without this we get gaps in provider data.
                 # With it we get some overlap although cache times may need to be tweaked
-                if (now() + timedelta(minutes=2)) < cache_time:
+                cache_time = cache_time - timedelta(minutes=2)
+
+                if now() < cache_time:
                     logger.warning(
                         'Cache not yet expired for {}. Wait until {}'.format(
                             provider,
-                            cache_time - timedelta(minutes=2)
+                            cache_time
                         )
                     )
                     continue
@@ -71,7 +73,7 @@ class Command(BaseCommand):
 
             # we have some price data
             for currency in prices:
-                logger.info('Saving {} from {}'.format(currency, provider_name))
+                logger.info('Saving {} from {}'.format(currency, provider.name))
                 ProviderResponse.objects.create(
                     provider=provider,
                     currency=currency,

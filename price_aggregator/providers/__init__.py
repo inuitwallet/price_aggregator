@@ -1,4 +1,5 @@
 from .bitfinex import Bitfinex
+from .bitstamp import BitStamp
 from .bitstamp_eur import BitStampEur
 from .coinapi import CoinApi
 from .coinigy import Coinigy
@@ -13,6 +14,7 @@ from .openexchangerates import OpenExchangeRates
 
 __all__ = [
     'Bitfinex',
+    'BitStamp',
     'BitStampEur',
     'CoinApi',
     'Coinigy',
