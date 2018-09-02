@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from price_aggregator.models import Currency, Provider, AggregatedPrice, ProviderResponse, \
-    ProviderFailure
+    ProviderFailure, ProviderBlackList
 
 
 @admin.register(Provider)
@@ -29,3 +29,9 @@ class CurrencyAdmin(admin.ModelAdmin):
 class AggregatedPriceAdmin(admin.ModelAdmin):
     list_display = ['date_time', 'currency', 'aggregated_price']
     raw_id_fields = ['currency']
+
+
+@admin.register(ProviderBlackList)
+class ProviderBlackList(admin.ModelAdmin):
+    list_display = ['currency', 'provider']
+    raw_id_fields = ['currency', 'provider']

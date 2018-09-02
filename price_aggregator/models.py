@@ -8,6 +8,9 @@ class Provider(models.Model):
     cache = models.IntegerField(
         default=300
     )
+    active = models.BooleanField(
+        default=True
+    )
 
     def __str__(self):
         return self.name
@@ -20,12 +23,29 @@ class Currency(models.Model):
     name = models.CharField(
         max_length=255
     )
+    min_providers = models.IntegerField(
+        default=3
+    )
+    max_std_dev = models.IntegerField(
+        default=60
+    )
 
     def __str__(self):
         return '{} ({})'.format(self.name, self.code)
 
     class Meta:
         verbose_name_plural = 'Currencies'
+
+
+class ProviderBlackList(models.Model):
+    currency = models.ForeignKey(
+        'Currency',
+        on_delete=models.CASCADE
+    )
+    provider = models.ForeignKey(
+        'Provider',
+        on_delete=models.CASCADE
+    )
 
 
 class ProviderResponse(models.Model):
@@ -70,6 +90,41 @@ class ProviderFailure(models.Model):
     )
 
 
+class AggregatedPriceManager(models.Manager):
+    def get_closest_to(self, target):
+        closest_greater_qs = self.filter(
+            date_time__gt=target
+        ).order_by(
+            'date_time'
+        )
+
+        closest_less_qs = self.filter(
+            date_time__lt=target
+        ).order_by(
+            '-date_time'
+        )
+
+        try:
+            try:
+                closest_greater = closest_greater_qs[0]
+            except IndexError:
+                return closest_less_qs[0]
+
+            try:
+                closest_less = closest_less_qs[0]
+            except IndexError:
+                return closest_greater_qs[0]
+        except IndexError:
+            raise self.model.DoesNotExist(
+                "There is no closest value because there are no values."
+            )
+
+        if closest_greater.date_time - target > target - closest_less.date_time:
+            return closest_less
+        else:
+            return closest_greater
+
+
 class AggregatedPrice(models.Model):
     date_time = models.DateTimeField(
         auto_now_add=True
@@ -100,6 +155,8 @@ class AggregatedPrice(models.Model):
     used_responses = models.ManyToManyField(
         ProviderResponse
     )
+
+    objects = AggregatedPriceManager()
 
     def serialize(self):
         return {

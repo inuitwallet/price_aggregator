@@ -37,7 +37,7 @@ class Coinigy(object):
         markets = markets_data.get('data')
 
         if not markets:
-            return None, 'no data in marekt_data: {}'.format(markets_data)
+            return None, 'no data in market_data: {}'.format(markets_data)
 
         search_codes = [coin.code.upper() for coin in currencies]
         prices = {}

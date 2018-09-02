@@ -36,6 +36,7 @@ class CryptoCompare(object):
             if currency in search_codes:
                 for coin in currencies:
                     if coin.code.upper() == currency:
+                        print(currency, data.get(currency))
                         output[coin] = Decimal(1 / data.get(currency))
 
         return output, 'success'

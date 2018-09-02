@@ -11,11 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    def remove_outliers(self, valid_responses, num_stdev=1.0):
+    def remove_outliers(self, currency, valid_responses, num_stdev=1.0):
         if valid_responses.count() <= 2:
             return [resp for resp in valid_responses]
 
-        if num_stdev > 60:
+        if num_stdev > currency.max_std_dev:
             return [resp for resp in valid_responses]
 
         cleaned_responses = []
@@ -33,8 +33,8 @@ class Command(BaseCommand):
 
             cleaned_responses.append(resp)
 
-        if len(cleaned_responses) < 3:
-            return self.remove_outliers(valid_responses, (num_stdev + 0.1))
+        if len(cleaned_responses) < currency.min_providers:
+            return self.remove_outliers(currency, valid_responses, (num_stdev + 0.1))
 
         return cleaned_responses
 
@@ -58,7 +58,7 @@ class Command(BaseCommand):
                 logger.warning('Got no valid responses for {}'.format(currency))
                 continue
 
-            cleaned_responses = self.remove_outliers(valid_responses)
+            cleaned_responses = self.remove_outliers(currency, valid_responses)
 
             # calculate the mean of all prices
             prices = [resp.value for resp in cleaned_responses]

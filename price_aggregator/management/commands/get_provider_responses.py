@@ -5,7 +5,7 @@ from django.core.management import BaseCommand
 from django.utils.timezone import now
 
 from price_aggregator import providers
-from price_aggregator.models import Currency, ProviderFailure, ProviderResponse, Provider
+from price_aggregator.models import Currency, ProviderFailure, ProviderResponse, Provider, ProviderBlackList
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,12 @@ class Command(BaseCommand):
             '--provider',
             help='The provider to get a response from',
             dest='provider'
+        )
+        parser.add_argument(
+            '-f',
+            '--force',
+            help='Request even if cache hasn\'t expired',
+            action='store_true'
         )
 
     def handle(self, *args, **options):
@@ -34,6 +40,10 @@ class Command(BaseCommand):
                 logger.error('No provider named {}'.format(provider_name))
                 continue
 
+            if not provider.active:
+                logger.warning('{} is not active. Skipping!'.format(provider_name))
+                continue
+
             logger.info('Working on provider {}'.format(provider.name))
 
             # see if the cache time has lapsed
@@ -43,7 +53,7 @@ class Command(BaseCommand):
                 '-date_time'
             ).first()
 
-            if last_response:
+            if last_response and not options['force']:
                 cache_time = last_response.date_time + timedelta(seconds=provider.cache)
 
                 # use the timedelta to check if the cache is about to expire.
@@ -73,7 +83,15 @@ class Command(BaseCommand):
 
             # we have some price data
             for currency in prices:
-                logger.info('Saving {} from {}'.format(currency, provider.name))
+                # if the provider is blacklisted, we skip
+                try:
+                    ProviderBlackList.objects.get(currency=currency, provider=provider)
+                    continue
+                except ProviderBlackList.DoesNotExist:
+                    pass
+
+                logger.info('Saving {} from {}: {:.8f}'.format(currency, provider.name, prices.get(currency)))
+
                 ProviderResponse.objects.create(
                     provider=provider,
                     currency=currency,
