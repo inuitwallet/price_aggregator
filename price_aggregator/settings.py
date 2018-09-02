@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'channels',
     'storages',
     'price_aggregator',
-    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -53,7 +52,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'price_aggregator.urls'
@@ -127,7 +125,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-#STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 LOGGING = {
     'version': 1,
