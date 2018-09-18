@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 
 import requests
-
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class Fixer(object):
         logger.info('Fixer: Getting prices')
 
         r = requests.get(
-            url='https://api.fixer.io/latest?base=USD'
+            url='https://api.fixer.io/latest?access_key={}&base=USD'.format(settings.FIXER_API_KEY)
         )
 
         if r.status_code != requests.codes.ok:
