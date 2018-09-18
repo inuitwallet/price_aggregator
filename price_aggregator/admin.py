@@ -39,5 +39,5 @@ class ProviderBlackList(admin.ModelAdmin):
 
 @admin.register(NuMarketMaker)
 class NuMarketMakerAdmin(admin.ModelAdmin):
-    list_display = ['currency', 'market_maker_price', 'market_target', 'multiplier', 'market_movement']
+    list_display = ['currency', 'market_maker_price', 'market_target', 'market_movement', 'multiplier']
     raw_id_fields = ['currency', 'multiplier']
