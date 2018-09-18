@@ -6,7 +6,7 @@ from price_aggregator.models import Currency, Provider, AggregatedPrice, Provide
 
 @admin.register(Provider)
 class ProviderAdmin(admin.ModelAdmin):
-    list_display = ['name', 'cache']
+    list_display = ['name', 'cache', 'active']
 
 
 @admin.register(ProviderResponse)
