@@ -75,6 +75,9 @@ class ProviderResponse(models.Model):
             self.update_by
         )
 
+    class Meta:
+        ordering = ['-date_time']
+
 
 class ProviderFailure(models.Model):
     date_time = models.DateTimeField(
@@ -158,6 +161,9 @@ class AggregatedPrice(models.Model):
 
     objects = AggregatedPriceManager()
 
+    class Meta:
+        ordering = ['-date_time']
+
     def serialize(self):
         return {
             'currency': self.currency.code,
@@ -176,6 +182,18 @@ class AggregatedPrice(models.Model):
                 } for resp in self.used_responses.all()
             ]
         }
+
+
+class NuMarketMaker(models.Model):
+    currency = models.ForeignKey(
+        Currency,
+        on_delete=models.CASCADE
+    )
+    market_maker_price = models.DecimalField(
+        decimal_places=10,
+        max_digits=25,
+        default=1
+    )
 
 
 

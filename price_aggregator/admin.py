@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from price_aggregator.models import Currency, Provider, AggregatedPrice, ProviderResponse, \
-    ProviderFailure, ProviderBlackList
+    ProviderFailure, ProviderBlackList, NuMarketMaker
 
 
 @admin.register(Provider)
@@ -35,3 +35,9 @@ class AggregatedPriceAdmin(admin.ModelAdmin):
 class ProviderBlackList(admin.ModelAdmin):
     list_display = ['currency', 'provider']
     raw_id_fields = ['currency', 'provider']
+
+
+@admin.register(NuMarketMaker)
+class NuMarketMakerAdmin(admin.ModelAdmin):
+    list_display = ['currency', 'market_maker_price']
+    raw_id_fields = ['currency']
