@@ -37,7 +37,7 @@ class Cryptonator(object):
         for coin in currencies:
             if coin.code in supported_currencies:
                 r = requests.get(
-                    url='https://api.cryptonator.com/api/ticker/{}-usd'.format(
+                    url='https://api.cryptonator.com/api/ticker/{}-usd?'.format(
                         coin.code.lower()
                     )
                 )
