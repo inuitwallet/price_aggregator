@@ -1,6 +1,6 @@
 import logging
 
-from price_aggregator.models import NuMarketMaker
+from price_aggregator.models import NuMarketMaker, AggregatedPrice
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +18,18 @@ class Nu(object):
         for currency in currencies:
             if currency.code in ['USNBT', 'CNNBT', 'EUNBT', 'XNBT']:
                 try:
-                    maker_price = NuMarketMaker.objects.get(currency=currency).market_maker_price
+                    maker = NuMarketMaker.objects.get(currency=currency)
                 except NuMarketMaker.DoesNotExist:
                     continue
 
-                output[currency] = maker_price
+                multiplier_price = 1
+
+                if maker.multiplier:
+                    multiplier = AggregatedPrice.objects.filter(currency=maker.multiplier).first()
+                    if multiplier:
+                        multiplier_price = multiplier.aggregated_price
+
+                output[currency] = maker.market_maker_price * multiplier_price
 
         return output, 'success'
 

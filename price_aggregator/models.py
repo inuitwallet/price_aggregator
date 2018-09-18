@@ -187,16 +187,40 @@ class AggregatedPrice(models.Model):
 class NuMarketMaker(models.Model):
     currency = models.ForeignKey(
         Currency,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='currency',
+        help_text='The currency to affect'
     )
     market_maker_price = models.DecimalField(
         decimal_places=10,
         max_digits=25,
-        default=1
+        default=1,
+        help_text='the price to use in aggregation calculations'
     )
-
-
-
+    market_target = models.DecimalField(
+        decimal_places=10,
+        max_digits=25,
+        default=1,
+        help_text='The target to reach during increments.'
+                  'If market_maker_price and this are equal, no more increments will take place'
+    )
+    market_movement = models.DecimalField(
+        decimal_places=5,
+        max_digits=25,
+        default=0,
+        help_text='The percentage movement that each increment will affect. Set to negative for downward movement'
+    )
+    multiplier = models.ForeignKey(
+        Currency,
+        on_delete=models.CASCADE,
+        related_name='multiplier',
+        blank=True,
+        null=True,
+        help_text='if this is set the market_maker_price will be multiplied by the latest aggregated price for this '
+                  'currency before being used in Aggregation Calculations. '
+                  'This effectively changes the market_maker_price to apply to this currency, '
+                  'while still being priced in USD'
+    )
 
 
 
