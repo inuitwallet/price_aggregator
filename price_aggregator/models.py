@@ -94,14 +94,16 @@ class ProviderFailure(models.Model):
 
 
 class AggregatedPriceManager(models.Manager):
-    def get_closest_to(self, target):
+    def get_closest_to(self, currency, target):
         closest_greater_qs = self.filter(
+            currency=currency,
             date_time__gt=target
         ).order_by(
             'date_time'
         )
 
         closest_less_qs = self.filter(
+            currency=currency,
             date_time__lt=target
         ).order_by(
             '-date_time'

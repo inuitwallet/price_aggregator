@@ -34,6 +34,11 @@ class IndexView(View):
                     {
                         'url': '{}/price/<currency_code>'.format(request_url),
                         'url_function': 'Display aggregated price data for the currency specified by <currency_code>'
+                    },
+                    {
+                        'url': '{}/price/<currency_code>/<date_time>'.format(request_url),
+                        'url_function': 'Display aggregated price data for the currency specified by <currency_code> '
+                                        'at the date_time given by <date_time> (yyyy-mm-ddTHH:MM:SS)'
                     }
                 ]
             },
@@ -89,6 +94,28 @@ class PriceView(View):
                 del agg_price['moving_averages'][period]
 
         return JsonResponse(agg_price, json_dumps_params={'sort_keys': True})
+
+
+class SpotPriceView(View):
+    @staticmethod
+    def get(request, currency_code, date_time):
+        # get the currency
+        currency = get_object_or_404(Currency, code__iexact=currency_code)
+        # get the datetime
+        dt = make_aware(datetime.datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%S"))
+
+        # get the aggregated price closest to date_time
+        try:
+            agg_price = AggregatedPrice.objects.get_closest_to(
+                currency=currency,
+                target=dt
+            )
+        except AggregatedPrice.DoesNotExist:
+            return JsonResponse(
+                {'error': 'no aggregated prices found'}
+            )
+
+        return JsonResponse(agg_price.serialize(), json_dumps_params={'sort_keys': True})
 
 
 class CurrenciesView(View):

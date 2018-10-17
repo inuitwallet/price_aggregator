@@ -15,6 +15,8 @@ class Fixer(object):
     def get_prices(currencies):
         logger.info('Fixer: Getting prices')
 
+        logger.info('https://api.fixer.io/latest?access_key={}&base=USD'.format(settings.FIXER_API_KEY))
+
         r = requests.get(
             url='https://api.fixer.io/latest?access_key={}&base=USD'.format(settings.FIXER_API_KEY)
         )
