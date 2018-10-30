@@ -128,14 +128,12 @@ class CurrenciesView(View):
             supported_providers = ProviderResponse.objects.filter(
                 currency=currency,
                 date_time__gte=now() - datetime.timedelta(days=1)
-            ).distinct(
-                'provider'
             ).values_list(
                 'provider__name',
                 flat=True
             )
 
-            response[currency.code] = list(supported_providers)
+            response[currency.code] = list(set(supported_providers))
 
         return JsonResponse(response, json_dumps_params={'sort_keys': True})
 
