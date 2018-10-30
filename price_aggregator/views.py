@@ -149,14 +149,12 @@ class ProvidersView(View):
             supported_currencies = ProviderResponse.objects.filter(
                 provider=provider,
                 date_time__gte=now() - datetime.timedelta(days=1)
-            ).distinct(
-                'currency'
             ).values_list(
                 'currency__code',
                 flat=True
             )
             response[provider.name] = {
-                'supported_currencies': list(supported_currencies),
+                'supported_currencies': list(set(supported_currencies)),
                 'url': '{}{}'.format(
                     request_url,
                     reverse('provider', kwargs={'provider': provider.name})
