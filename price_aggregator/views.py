@@ -172,8 +172,6 @@ class ProviderResponsesView(View):
             date_time__gte=now() - datetime.timedelta(days=1)
         )
 
-        print([r.currency for r in responses.distinct('currency')])
-
         return JsonResponse(
             {
                 provider_obj.name: {
@@ -184,7 +182,7 @@ class ProviderResponsesView(View):
                                 'value': response.value
                             } for response in responses.filter(currency=resp.currency).order_by('date_time')
                         ]
-                    } for resp in responses.distinct('currency')
+                    } for resp in responses.distinct('currency').order_by('currency')
                 }
             }
         )
