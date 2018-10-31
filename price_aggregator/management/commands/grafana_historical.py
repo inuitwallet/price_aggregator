@@ -86,4 +86,4 @@ class Command(BaseCommand):
 
             self.send_to_carbon(carbon_data)
 
-            start_date += datetime.timedelta(minutes=2)
+            start_date += datetime.timedelta(minutes=5)
