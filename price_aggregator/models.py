@@ -132,7 +132,8 @@ class AggregatedPriceManager(models.Manager):
 
 class AggregatedPrice(models.Model):
     date_time = models.DateTimeField(
-        auto_now_add=True
+        auto_now_add=True,
+        db_index=True
     )
     currency = models.ForeignKey(
         Currency,
