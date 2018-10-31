@@ -2,6 +2,7 @@ import datetime
 import pickle
 import socket
 import struct
+from statistics import mean
 
 from django.core.management import BaseCommand
 from django.utils.timezone import make_aware
@@ -43,6 +44,16 @@ class Command(BaseCommand):
                 except AggregatedPrice.DoesNotExist:
                     continue
 
+                agg_prices = AggregatedPrice.objects.filter(
+                    currency=currency,
+                    date_time__gt=agg_price.date_time - datetime.timedelta(minutes=30)
+                ).values_list('aggregated_price', flat=True)
+
+                if len(agg_prices) > 1:
+                    min_30_price = float('{:.8f}'.format(mean(agg_prices)))
+                else:
+                    min_30_price = None
+
                 price = float('{:.8f}'.format(agg_price.aggregated_price))
                 timestamp = int(start_date.timestamp())
 
@@ -83,6 +94,16 @@ class Command(BaseCommand):
                         (timestamp, str(float('{:.0f}'.format(agg_price.providers))))
                     )
                 )
+
+                if min_30_price:
+                    carbon_data.append(
+                        (
+                            'lambda.currencies.{}.aggregator_30_ma'.format(
+                                currency.code.upper()
+                            ),
+                            (timestamp, str(min_30_price))
+                        )
+                    )
 
             self.send_to_carbon(carbon_data)
 
