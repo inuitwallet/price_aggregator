@@ -98,7 +98,7 @@ class Command(BaseCommand):
                 if min_30_price:
                     carbon_data.append(
                         (
-                            'lambda.currencies.{}.aggregator_30_ma'.format(
+                            'lambda.currencies.{}.aggregator_30_minute_ma'.format(
                                 currency.code.upper()
                             ),
                             (timestamp, str(min_30_price))
