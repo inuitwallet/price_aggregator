@@ -50,7 +50,8 @@ class ProviderBlackList(models.Model):
 
 class ProviderResponse(models.Model):
     date_time = models.DateTimeField(
-        auto_now_add=True
+        auto_now_add=True,
+        db_index=True
     )
     provider = models.ForeignKey(
         Provider,
