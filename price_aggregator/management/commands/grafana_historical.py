@@ -28,7 +28,7 @@ class Command(BaseCommand):
             return 0
 
     def handle(self, *args, **options):
-        start_date = make_aware(datetime.datetime(2018, 7, 5, 9, 00))
+        start_date = make_aware(datetime.datetime(2018, 7, 5, 8, 00))
         end_date = make_aware(datetime.datetime(2018, 10, 30, 23, 40))
 
         while start_date < end_date:
