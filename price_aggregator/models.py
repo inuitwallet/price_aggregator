@@ -1,4 +1,8 @@
+import datetime
+from statistics import mean
+
 from django.db import models
+from django.utils.timezone import now
 
 
 class Provider(models.Model):
@@ -168,8 +172,47 @@ class AggregatedPrice(models.Model):
     class Meta:
         ordering = ['-date_time']
 
+    def calculate_moving_averages(self):
+        """
+        Get the previous 24 hours aggregated prices and calculate various moving averages
+        :return:
+        """
+        agg_prices = AggregatedPrice.objects.filter(
+            currency=self.currency,
+            date_time__gt=(self.date_time - datetime.timedelta(hours=24))
+        ).order_by(
+            '-date_time'
+        )
+
+        if not agg_prices:
+            return {}
+            # JsonResponse(
+            #     {'error': 'no aggregated prices found for the last 24 hours'}
+            # )
+
+        # calculate the moving averages
+        moving_averages = {
+            '24_hour': 1440,
+            '12_hour': 720,
+            '6_hour': 360,
+            '1_hour': 60,
+            '30_minute': 30
+        }
+
+        for period in moving_averages.copy():
+            agg_list = agg_prices.filter(
+                date_time__gte=(self.date_time - datetime.timedelta(minutes=moving_averages[period]))
+            ).values_list('aggregated_price', flat=True)
+
+            if len(agg_list) > 1:
+                moving_averages[period] = float('{:.8f}'.format(mean(agg_list)))
+            else:
+                del moving_averages[period]
+
+        return moving_averages
+
     def serialize(self):
-        return {
+        serialized_data = {
             'currency': self.currency.code,
             'currency_name': self.currency.name,
             'aggregation_date_time': self.date_time,
@@ -184,8 +227,14 @@ class AggregatedPrice(models.Model):
                     'collection_date_time': resp.date_time,
                     'cache_seconds': float('{:0f}'.format(resp.provider.cache))
                 } for resp in self.used_responses.all()
-            ]
+            ],
+            'moving_averages': self.calculate_moving_averages()
         }
+
+        if self.date_time < (now() - datetime.timedelta(hours=24)):
+            serialized_data['warning'] = 'Price is older than 24 hours. Use with caution'
+
+        return serialized_data
 
 
 class NuMarketMaker(models.Model):
