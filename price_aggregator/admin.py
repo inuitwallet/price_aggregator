@@ -12,6 +12,7 @@ class ProviderAdmin(admin.ModelAdmin):
 @admin.register(ProviderResponse)
 class ProviderResponseAdmin(admin.ModelAdmin):
     list_display = ['date_time', 'provider', 'currency', 'value', 'update_by']
+    list_filter = ['provider', 'currency']
     raw_id_fields = ['provider', 'currency']
 
 
