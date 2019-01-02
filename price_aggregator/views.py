@@ -51,6 +51,11 @@ class IndexView(View):
 class PriceView(View):
     @staticmethod
     def get(request, currency_code):
+        # Bittrex still calls USNBT NBT!
+        # TODO - handle multiple codes on model?
+        if currency_code.lower() == 'nbt':
+            currency_code = 'usnbt'
+
         # get the currency
         currency = get_object_or_404(Currency, code__iexact=currency_code)
         # get the last aggregated price
@@ -71,6 +76,11 @@ class PriceView(View):
 class SpotPriceView(View):
     @staticmethod
     def get(request, currency_code, date_time):
+        # Bittrex still calls USNBT NBT!
+        # TODO - handle multiple codes on model?
+        if currency_code.lower() == 'nbt':
+            currency_code = 'usnbt'
+
         # get the currency
         currency = get_object_or_404(Currency, code__iexact=currency_code)
         # get the datetime
