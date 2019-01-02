@@ -24,6 +24,12 @@ class Command(BaseCommand):
             help='Request even if cache hasn\'t expired',
             action='store_true'
         )
+        parser.add_argument(
+            '-s',
+            '--skip-save',
+            help='Don\'t save the collected data',
+            action='store_true'
+        )
 
     def handle(self, *args, **options):
         if options['provider']:
@@ -89,6 +95,12 @@ class Command(BaseCommand):
                     continue
                 except ProviderBlackList.DoesNotExist:
                     pass
+
+                if options['skip_save']:
+                    logger.info(
+                        'Skipping save of {} from {}: {:.8f}'.format(currency, provider.name, prices.get(currency))
+                    )
+                    continue
 
                 logger.info('Saving {} from {}: {:.8f}'.format(currency, provider.name, prices.get(currency)))
 
