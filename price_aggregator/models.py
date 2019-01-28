@@ -63,7 +63,7 @@ class Currency(models.Model):
 
             movements['number_of_days'][days] = {
                 'price': float('{:.8f}'.format(price.aggregated_price)),
-                'movement_factor': float('{:.8f}'.format(factor)),
+                'movement_factor': float('{:.8f}'.format(1 + factor)),
                 'movement_percentage': float('{:.8f}'.format(factor * 100))
             }
 
