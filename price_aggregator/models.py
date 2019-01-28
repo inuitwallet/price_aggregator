@@ -59,11 +59,12 @@ class Currency(models.Model):
                 latest_agg_price.date_time - datetime.timedelta(days=days)
             )
 
-            movement = ((latest_agg_price.aggregated_price - price.aggregated_price) / price.aggregated_price) * 100
+            factor = ((latest_agg_price.aggregated_price - price.aggregated_price) / price.aggregated_price)
 
             movements['number_of_days'][days] = {
                 'price': float('{:.8f}'.format(price.aggregated_price)),
-                'movement': float('{:.8f}'.format(movement))
+                'movement_factor': float('{:.8f}'.format(factor)),
+                'movement_percentage': float('{:.8f}'.format(factor * 100))
             }
 
         return movements
