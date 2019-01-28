@@ -40,6 +40,34 @@ class Currency(models.Model):
     class Meta:
         verbose_name_plural = 'Currencies'
 
+    def currency_movements(self):
+        """
+        Calculate the movements in price between a range of times and now.
+        expressed as percentage movement
+        """
+        # get the latest aggregated price
+        latest_agg_price = self.aggregatedprice_set.order_by('date_time').last()
+
+        movements = {
+            'latest_price': float('{:.8f}'.format(latest_agg_price.aggregated_price)),
+            'number_of_days': {}
+        }
+
+        for days in [1, 2, 3, 7, 14, 30]:
+            price = self.aggregatedprice_set.get_closest_to(
+                self,
+                latest_agg_price.date_time - datetime.timedelta(days=days)
+            )
+
+            movement = ((latest_agg_price.aggregated_price - price.aggregated_price) / price.aggregated_price) * 100
+
+            movements['number_of_days'][days] = {
+                'price': float('{:.8f}'.format(price.aggregated_price)),
+                'movement': float('{:.8f}'.format(movement))
+            }
+
+        return movements
+
 
 class ProviderBlackList(models.Model):
     currency = models.ForeignKey(

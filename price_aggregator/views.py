@@ -39,6 +39,10 @@ class IndexView(View):
                         'url': '{}/price/<currency_code>/<date_time>'.format(request_url),
                         'url_function': 'Display aggregated price data for the currency specified by <currency_code> '
                                         'at the date_time given by <date_time> (yyyy-mm-ddTHH:MM:SS)'
+                    },
+                    {
+                        'url': '{}/movement/<currency_code>'.format(request_url),
+                        'url_function': 'Display the price movement over a range of times'
                     }
                 ]
             },
@@ -168,3 +172,17 @@ class ProviderResponsesView(View):
                 }
             }
         )
+
+
+class PriceChangesView(View):
+    @staticmethod
+    def get(request, currency_code):
+        # Bittrex still calls USNBT NBT!
+        # TODO - handle multiple codes on model?
+        if currency_code.lower() == 'nbt':
+            currency_code = 'usnbt'
+
+        # get the currency
+        currency = get_object_or_404(Currency, code__iexact=currency_code)
+
+        return JsonResponse(currency.currency_movements())

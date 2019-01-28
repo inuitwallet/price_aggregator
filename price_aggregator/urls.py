@@ -27,6 +27,7 @@ urlpatterns = [
 
     path('price/<str:currency_code>', views.PriceView.as_view(), name='price'),
     path('price/<str:currency_code>/<str:date_time>', views.SpotPriceView.as_view(), name='spot_price'),
+    path('movement/<str:currency_code>', views.PriceChangesView.as_view(), name='price'),
     path('currencies', views.CurrenciesView.as_view(), name='currencies'),
     path('providers', views.ProvidersView.as_view(), name='providers'),
     path('provider/<str:provider>', views.ProviderResponsesView.as_view(), name='provider')
