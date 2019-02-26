@@ -3,7 +3,7 @@ import json
 from statistics import mean
 
 from django.http import JsonResponse, HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.timezone import make_aware, now
 from django.views import View
@@ -43,6 +43,14 @@ class IndexView(View):
                     {
                         'url': '{}/movement/<currency_code>'.format(request_url),
                         'url_function': 'Display the price movement over a range of times'
+                    },
+                    {
+                        'url': '{}/provider/<provider>'.format(request_url),
+                        'url_function': 'Display historical responses from a given provider'
+                    },
+                    {
+                        'url': '{}/provider/<provider>/price/<currency_code>'.format(request_url),
+                        'url_function': 'get the latest and moving average prices from a single provider'
                     }
                 ]
             },
@@ -55,6 +63,10 @@ class IndexView(View):
 class PriceView(View):
     @staticmethod
     def get(request, currency_code):
+        if currency_code == '<currency_code>':
+            # this is a link from the front page. Allow user to choose a currency code to select
+            return redirect('currency_choose', path='{}|price|{}')
+
         # Bittrex still calls USNBT NBT!
         # TODO - handle multiple codes on model?
         if currency_code.lower() == 'nbt':
@@ -77,9 +89,30 @@ class PriceView(View):
         return JsonResponse(agg_price.serialize(), json_dumps_params={'sort_keys': True})
 
 
+class CurrencyChooseView(View):
+    @staticmethod
+    def get(request, path):
+        response = {}
+        request_url = '{}://{}'.format(request.META.get('HTTP_X_FORWARDED_PROTO', 'http'), request.get_host())
+
+        for currency in Currency.objects.all():
+            response[currency.code] = path.replace('|', '/').format(request_url, currency.code)
+
+        return JsonResponse(response, json_dumps_params={'sort_keys': True})
+
+
 class SpotPriceView(View):
     @staticmethod
     def get(request, currency_code, date_time):
+        if currency_code == '<currency_code>':
+            # this is a link from the front page. Allow user to choose a currency code to select
+            return redirect('currency_choose', path='{}|price|{}|<date_time>')
+
+        if date_time == '<date_time>':
+            return JsonResponse(
+                {'error': 'The date_time parameter needs to be passed in the format yyyy-mm-ddTHH:MM:SS'}
+            )
+
         # Bittrex still calls USNBT NBT!
         # TODO - handle multiple codes on model?
         if currency_code.lower() == 'nbt':
@@ -88,7 +121,12 @@ class SpotPriceView(View):
         # get the currency
         currency = get_object_or_404(Currency, code__iexact=currency_code)
         # get the datetime
-        dt = make_aware(datetime.datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%S"))
+        try:
+            dt = make_aware(datetime.datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%S"))
+        except ValueError:
+            return JsonResponse(
+                {'error': 'The date_time parameter needs to be passed in the format yyyy-mm-ddTHH:MM:SS'}
+            )
 
         # get the aggregated price closest to date_time
         try:
@@ -124,6 +162,18 @@ class CurrenciesView(View):
         return JsonResponse(response, json_dumps_params={'sort_keys': True})
 
 
+class ProviderChooseView(View):
+    @staticmethod
+    def get(request, path):
+        response = {}
+        request_url = '{}://{}'.format(request.META.get('HTTP_X_FORWARDED_PROTO', 'http'), request.get_host())
+
+        for provider in Provider.objects.all():
+            response[provider.name] = path.replace('|', '/').format(request_url, provider.name)
+
+        return JsonResponse(response, json_dumps_params={'sort_keys': True})
+
+
 class ProvidersView(View):
     @staticmethod
     def get(request):
@@ -152,6 +202,9 @@ class ProvidersView(View):
 class ProviderResponsesView(View):
     @staticmethod
     def get(request, provider):
+        if provider == '<provider>':
+            return redirect('provider_choose', path='{}|provider|{}')
+
         provider_obj = get_object_or_404(Provider, name__iexact=provider)
         responses = ProviderResponse.objects.filter(
             provider=provider_obj,
@@ -174,9 +227,64 @@ class ProviderResponsesView(View):
         )
 
 
+class ProviderPriceView(View):
+    @staticmethod
+    def get(request, provider, currency_code):
+        if provider == '<provider>':
+            return redirect(
+                'provider_choose',
+                path='{{}}|provider|{{}}|price|{currency_code}'.format(currency_code=currency_code)
+            )
+
+        provider_obj = get_object_or_404(Provider, name__iexact=provider)
+
+        if currency_code == '<currency_code>':
+            # this is a link from the front page. we need to be selective around how we allow currency choice
+            request_url = '{}://{}'.format(request.META.get('HTTP_X_FORWARDED_PROTO', 'http'), request.get_host())
+            response = {}
+
+            for currency in provider_obj.providerresponse_set.all(
+            ).distinct(
+                'currency'
+            ).order_by(
+                'currency'
+            ).values_list(
+                'currency__code',
+                flat=True
+            ):
+                response[currency] = '{}/provider/{}/price/{}'.format(request_url, provider, currency)
+
+            return JsonResponse(response, json_dumps_params={'sort_keys': True})
+
+        # Bittrex still calls USNBT NBT!
+        # TODO - handle multiple codes on model?
+        if currency_code.lower() == 'nbt':
+            currency_code = 'usnbt'
+
+        # get the currency
+        currency = get_object_or_404(Currency, code__iexact=currency_code)
+
+        # check the provider supports this currency
+        if currency.code not in ProviderResponse.objects.filter(
+            provider=provider_obj,
+        ).values_list(
+            'currency__code',
+            flat=True
+        ):
+            return JsonResponse({'error': '{} is not supported by {}'.format(currency_code, provider)})
+
+        # get the latest response
+        last_response = provider_obj.providerresponse_set.filter(currency=currency).order_by('date_time').last()
+        return JsonResponse(last_response.serialize())
+
+
 class PriceChangesView(View):
     @staticmethod
     def get(request, currency_code):
+        if currency_code == '<currency_code>':
+            # this is a link from the front page. Allow user to choose a currency code to select
+            return redirect('currency_choose', path='{}|movement|{}')
+
         # Bittrex still calls USNBT NBT!
         # TODO - handle multiple codes on model?
         if currency_code.lower() == 'nbt':

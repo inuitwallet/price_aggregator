@@ -26,11 +26,14 @@ urlpatterns = [
     path('', views.IndexView.as_view()),
 
     path('price/<str:currency_code>', views.PriceView.as_view(), name='price'),
+    path('currency/choose/<str:path>', views.CurrencyChooseView.as_view(), name='currency_choose'),
     path('price/<str:currency_code>/<str:date_time>', views.SpotPriceView.as_view(), name='spot_price'),
     path('movement/<str:currency_code>', views.PriceChangesView.as_view(), name='price'),
     path('currencies', views.CurrenciesView.as_view(), name='currencies'),
     path('providers', views.ProvidersView.as_view(), name='providers'),
-    path('provider/<str:provider>', views.ProviderResponsesView.as_view(), name='provider')
+    path('provider/choose/<str:path>', views.ProviderChooseView.as_view(), name='provider_choose'),
+    path('provider/<str:provider>', views.ProviderResponsesView.as_view(), name='provider'),
+    path('provider/<str:provider>/price/<str:currency_code>', views.ProviderPriceView.as_view(), name='provider')
 ]
 
 if settings.DEBUG:

@@ -81,6 +81,43 @@ class ProviderBlackList(models.Model):
     )
 
 
+class ProviderResponseManager(models.Manager):
+    def get_closest_to(self, currency, target):
+        closest_greater_qs = self.filter(
+            currency=currency,
+            date_time__gt=target
+        ).order_by(
+            'date_time'
+        )
+
+        closest_less_qs = self.filter(
+            currency=currency,
+            date_time__lt=target
+        ).order_by(
+            '-date_time'
+        )
+
+        try:
+            try:
+                closest_greater = closest_greater_qs[0]
+            except IndexError:
+                return closest_less_qs[0]
+
+            try:
+                closest_less = closest_less_qs[0]
+            except IndexError:
+                return closest_greater_qs[0]
+        except IndexError:
+            raise self.model.DoesNotExist(
+                "There is no closest value because there are no values."
+            )
+
+        if closest_greater.date_time - target > target - closest_less.date_time:
+            return closest_less
+        else:
+            return closest_greater
+
+
 class ProviderResponse(models.Model):
     date_time = models.DateTimeField(
         auto_now_add=True,
@@ -101,6 +138,8 @@ class ProviderResponse(models.Model):
     )
     update_by = models.DateTimeField()
 
+    objects = ProviderResponseManager()
+
     def __str__(self):
         return '{} {}@{} ({})'.format(
             self.provider,
@@ -111,6 +150,57 @@ class ProviderResponse(models.Model):
 
     class Meta:
         ordering = ['-date_time']
+
+    def calculate_moving_averages(self):
+        """
+        Get the previous 24 hours values and calculate various moving averages
+        :return:
+        """
+        values = ProviderResponse.objects.filter(
+            provider=self.provider,
+            currency=self.currency,
+            date_time__gt=(self.date_time - datetime.timedelta(hours=24))
+        ).order_by(
+            '-date_time'
+        )
+
+        if not values:
+            return {}
+
+        # calculate the moving averages
+        moving_averages = {
+            '24_hour': 1440,
+            '12_hour': 720,
+            '6_hour': 360,
+            '1_hour': 60,
+            '30_minute': 30
+        }
+
+        for period in moving_averages.copy():
+            agg_list = values.filter(
+                date_time__gte=(self.date_time - datetime.timedelta(minutes=moving_averages[period]))
+            ).values_list('value', flat=True)
+
+            if len(agg_list) > 1:
+                moving_averages[period] = float('{:.8f}'.format(mean(agg_list)))
+            else:
+                del moving_averages[period]
+
+        return moving_averages
+
+    def serialize(self):
+        serialized_data = {
+            'currency': self.currency.code,
+            'currency_name': self.currency.name,
+            'date_time': self.date_time,
+            'usd_price': float('{:.8f}'.format(self.value)),
+            'moving_averages': self.calculate_moving_averages()
+        }
+
+        if self.date_time < (now() - datetime.timedelta(hours=24)):
+            serialized_data['warning'] = 'Price is older than 24 hours. Use with caution'
+
+        return serialized_data
 
 
 class ProviderFailure(models.Model):
