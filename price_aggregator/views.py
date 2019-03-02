@@ -51,6 +51,11 @@ class IndexView(View):
                     {
                         'url': '{}/provider/<provider>/price/<currency_code>'.format(request_url),
                         'url_function': 'get the latest and moving average prices from a single provider'
+                    },
+                    {
+                        'url': '{}/provider/<provider>/price/<currency_code>/<date_time>'.format(request_url),
+                        'url_function': 'Display single provider data for the currency specified by <currency_code> '
+                                        'at the date_time given by <date_time> (yyyy-mm-ddTHH:MM:SS)'
                     }
                 ]
             },
@@ -276,6 +281,81 @@ class ProviderPriceView(View):
         # get the latest response
         last_response = provider_obj.providerresponse_set.filter(currency=currency).order_by('date_time').last()
         return JsonResponse(last_response.serialize())
+
+
+class ProviderSpotPriceView(View):
+    @staticmethod
+    def get(request, provider, currency_code, date_time):
+        if provider == '<provider>':
+            return redirect(
+                'provider_choose',
+                path='{{}}|provider|{{}}|price|{currency_code}|<date_time>'.format(currency_code=currency_code)
+            )
+
+        provider_obj = get_object_or_404(Provider, name__iexact=provider)
+
+        if currency_code == '<currency_code>':
+            # this is a link from the front page. we need to be selective around how we allow currency choice
+            request_url = '{}://{}'.format(request.META.get('HTTP_X_FORWARDED_PROTO', 'http'), request.get_host())
+            response = {}
+
+            for currency in provider_obj.providerresponse_set.all(
+            ).distinct(
+                'currency'
+            ).order_by(
+                'currency'
+            ).values_list(
+                'currency__code',
+                flat=True
+            ):
+                response[currency] = '{}/provider/{}/price/{}/<date_time>'.format(request_url, provider, currency)
+
+            return JsonResponse(response, json_dumps_params={'sort_keys': True})
+
+        if date_time == '<date_time>':
+            return JsonResponse(
+                {'error': 'The date_time parameter needs to be passed in the format yyyy-mm-ddTHH:MM:SS'}
+            )
+
+        # Bittrex still calls USNBT NBT!
+        # TODO - handle multiple codes on model?
+        if currency_code.lower() == 'nbt':
+            currency_code = 'usnbt'
+
+        # get the currency
+        currency = get_object_or_404(Currency, code__iexact=currency_code)
+
+        # check the provider supports this currency
+        if currency.code not in ProviderResponse.objects.filter(
+                provider=provider_obj,
+        ).values_list(
+            'currency__code',
+            flat=True
+        ):
+            return JsonResponse({'error': '{} is not supported by {}'.format(currency_code, provider)})
+
+        # get the datetime
+        try:
+            dt = make_aware(datetime.datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%S"))
+        except ValueError:
+            return JsonResponse(
+                {'error': 'The date_time parameter needs to be passed in the format yyyy-mm-ddTHH:MM:SS'}
+            )
+
+        # get the aggregated price closest to date_time
+        try:
+            # get the closest response
+            provider_response = ProviderResponse.objects.get_closest_to(
+                provider=provider_obj,
+                currency=currency,
+                target=dt
+            )
+        except ProviderResponse.DoesNotExist:
+            return JsonResponse(
+                {'error': 'no provider response found'}
+            )
+
+        return JsonResponse(provider_response.serialize(), json_dumps_params={'sort_keys': True})
 
 
 class PriceChangesView(View):

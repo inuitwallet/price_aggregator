@@ -82,8 +82,9 @@ class ProviderBlackList(models.Model):
 
 
 class ProviderResponseManager(models.Manager):
-    def get_closest_to(self, currency, target):
+    def get_closest_to(self, provider, currency, target):
         closest_greater_qs = self.filter(
+            provider=provider,
             currency=currency,
             date_time__gt=target
         ).order_by(
@@ -91,6 +92,7 @@ class ProviderResponseManager(models.Manager):
         )
 
         closest_less_qs = self.filter(
+            provider=provider,
             currency=currency,
             date_time__lt=target
         ).order_by(

@@ -33,11 +33,10 @@ urlpatterns = [
     path('providers', views.ProvidersView.as_view(), name='providers'),
     path('provider/choose/<str:path>', views.ProviderChooseView.as_view(), name='provider_choose'),
     path('provider/<str:provider>', views.ProviderResponsesView.as_view(), name='provider'),
-    path('provider/<str:provider>/price/<str:currency_code>', views.ProviderPriceView.as_view(), name='provider')
+    path('provider/<str:provider>/price/<str:currency_code>', views.ProviderPriceView.as_view(), name='provider'),
+    path(
+        'provider/<str:provider>/price/<str:currency_code>/<str:date_time>',
+        views.ProviderSpotPriceView.as_view(),
+        name='provider_spot_price'
+    )
 ]
-
-if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns = [
-        url(r'^__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
