@@ -28,12 +28,17 @@ class CoinMarketCap(object):
             return None, 'no json: {}'.format(r.text)
 
         search_codes = [coin.code.upper() for coin in currencies]
-        output = {}
+        output = []
 
         for coin_data in data:
             if coin_data.get('symbol') in search_codes:
                 for coin in currencies:
                     if coin.code.upper() == coin_data.get('symbol'):
-                        output[coin] = Decimal(coin_data.get('price_usd'))
+                        output.append(
+                            {
+                                'coin': coin,
+                                'price': Decimal(coin_data.get('price_usd'))
+                            }
+                        )
 
         return output, 'success'

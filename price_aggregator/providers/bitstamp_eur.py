@@ -46,4 +46,4 @@ class BitStampEur(object):
         if not sell:
             return None, 'no sell price found: {}'.format(data)
 
-        return {EUR: Decimal((Decimal(buy) + Decimal(sell)) / 2)}, 'success'
+        return [{'coin': EUR, 'price': Decimal((Decimal(buy) + Decimal(sell)) / 2)}], 'success'

@@ -39,12 +39,17 @@ class EcbEuropa(object):
                 usd_rate = Decimal(child.attrib.get('rate'))
 
         search_codes = [coin.code.upper() for coin in currencies]
-        output = {}
+        output = []
 
         for child in cube[0]:
             if child.attrib.get('currency') in search_codes:
                 for coin in currencies:
                     if coin.code.upper() == child.attrib.get('currency'):
-                        output[coin] = Decimal(1 / (Decimal(child.attrib.get('rate')) * usd_rate))  # noqa
+                        output.append(
+                            {
+                                'coin': coin,
+                                'price': Decimal(1 / (Decimal(child.attrib.get('rate')) * usd_rate))
+                            }
+                        )
 
         return output, 'success'

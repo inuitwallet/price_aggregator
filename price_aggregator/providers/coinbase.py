@@ -37,12 +37,17 @@ class CoinBase(object):
             return None, 'no rates returned in data: {}'.format(data)
 
         search_codes = [coin.code.upper() for coin in currencies]
-        output = {}
+        output = []
 
         for coin_symbol in rates:
             if coin_symbol.upper() in search_codes:
                 for coin in currencies:
                     if coin.code.upper() == coin_symbol.upper():
-                        output[coin] = Decimal(1) / Decimal(rates.get(coin_symbol))
+                        output.append(
+                            {
+                                'coin': coin,
+                                'price': Decimal(1) / Decimal(rates.get(coin_symbol))
+                            }
+                        )
 
         return output, 'success'

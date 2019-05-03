@@ -16,7 +16,7 @@ class BitStamp(object):
 
         supported_currencies = ['BTC', 'EUR', 'XRP', 'LTC', 'ETH', 'BCH']
         search_codes = [coin.code.upper() for coin in currencies]
-        output = {}
+        output = []
 
         for currency_code in set(search_codes).intersection(supported_currencies):
             r = requests.get(
@@ -38,7 +38,12 @@ class BitStamp(object):
 
             for coin in currencies:
                 if coin.code.upper() == currency_code.upper():
-                    output[coin] = Decimal(data.get('last'))
+                    output.append(
+                        {
+                            'coin': coin,
+                            'price': Decimal(data.get('last'))
+                        }
+                    )
 
         return output, 'success'
 

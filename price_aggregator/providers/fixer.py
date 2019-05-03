@@ -35,12 +35,17 @@ class Fixer(object):
             return None, 'no rates found in data: {}'.format(data)
 
         search_codes = [coin.code.upper() for coin in currencies]
-        output = {}
+        output = []
 
         for currency_code in rates:
             if currency_code in search_codes:
                 for coin in currencies:
                     if coin.code.upper() == currency_code:
-                        output[coin] = Decimal(1 / rates.get(currency_code))
+                        output.append(
+                            {
+                                'coin': coin,
+                                'price': Decimal(1 / rates.get(currency_code))
+                            }
+                        )
 
         return output, 'success'

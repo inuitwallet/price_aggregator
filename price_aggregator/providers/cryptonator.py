@@ -32,7 +32,7 @@ class Cryptonator(object):
             'ZEC'
         ]
 
-        output = {}
+        output = []
 
         for coin in currencies:
             if coin.code in supported_currencies:
@@ -55,7 +55,12 @@ class Cryptonator(object):
                 if not ticker:
                     return None, 'no ticker in data: {}'.format(data)
 
-                output[coin] = Decimal(ticker.get('price'))
+                output.append(
+                    {
+                        'coin': coin,
+                        'price': Decimal(ticker.get('price'))
+                    }
+                )
 
         return output, 'success'
 

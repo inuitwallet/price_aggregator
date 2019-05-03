@@ -1,3 +1,4 @@
+from .altilly import Altilly
 from .bitcoinaverage import BitcoinAverage
 from .bitfinex import Bitfinex
 from .bitstamp import BitStamp
@@ -19,6 +20,7 @@ from .nu import Nu
 from .openexchangerates import OpenExchangeRates
 
 __all__ = [
+    'Altilly',
     'BitcoinAverage',
     'Bitfinex',
     'BitStamp',

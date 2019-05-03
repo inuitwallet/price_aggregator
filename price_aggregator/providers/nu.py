@@ -13,7 +13,7 @@ class Nu(object):
     def get_prices(currencies):
         logger.info('Nu: Getting prices')
 
-        output = {}
+        output = []
 
         for currency in currencies:
             if currency.code in ['USNBT', 'CNNBT', 'EUNBT', 'XNBT']:
@@ -29,7 +29,12 @@ class Nu(object):
                     if multiplier:
                         multiplier_price = multiplier.aggregated_price
 
-                output[currency] = maker.market_maker_price * multiplier_price
+                output.append(
+                    {
+                        'coin': currency,
+                        'price': maker.market_maker_price * multiplier_price
+                    }
+                )
 
         return output, 'success'
 

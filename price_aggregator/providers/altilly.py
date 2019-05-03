@@ -9,18 +9,30 @@ from price_aggregator.models import AggregatedPrice
 logger = logging.getLogger(__name__)
 
 
-class Bittrex(object):
+class Altilly(object):
     """
-    https://www.coinapi.io
+    https://www.altilly.com/page/restapi
     """
     @staticmethod
     def get_prices(currencies):
-        logger.info('Bittrex: Getting prices')
+        logger.info('Altilly: Getting prices')
+
+        # get the market symbols
+        r = requests.get(
+            url='https://api.altilly.com/api/public/symbol'
+        )
+
+        if r.status_code != requests.codes.ok:
+            return None, 'bad status code: {}'.format(r.status_code)
+
+        try:
+            symbols = r.json()
+        except ValueError:
+            return None, 'no json: {}'.format(r.text)
 
         # get the market summaries
-
         r = requests.get(
-            url='https://bittrex.com/api/v1.1/public/getmarketsummaries',
+            url='https://api.altilly.com/api/public/ticker'
         )
 
         if r.status_code != requests.codes.ok:
@@ -31,23 +43,27 @@ class Bittrex(object):
         except ValueError:
             return None, 'no json: {}'.format(r.text)
 
-        results = data.get('result')
-
-        if not results:
-            return None, 'no quotes in data: {]'.format(data)
-
         search_codes = [coin.code.upper() for coin in currencies]
 
         output = []
         current_prices = {}
 
-        for market_data in results:
-            base_coin = market_data.get('MarketName', '-').split('-')[0]
-            market_coin = market_data.get('MarketName', '-').split('-')[1]
+        for market_data in data:
+            market_symbol = market_data.get('symbol')
+            market_coin = None
+            base_coin = None
 
-            # Bittrex still call USNubits NBT
-            if market_coin == 'NBT':
-                market_coin = 'USNBT'
+            for symbol in symbols:
+                if symbol.get('id') == market_symbol:
+                    # Altilly have their currencies inverted for some reason
+                    base_coin = symbol.get('quoteCurrency')
+                    market_coin = symbol.get('baseCurrency')
+
+            if not market_coin:
+                continue
+
+            if not base_coin:
+                continue
 
             if market_coin in search_codes:
                 # if the base coin isn't USD we need to convert to USD
@@ -79,8 +95,8 @@ class Bittrex(object):
                         output.append(
                             {
                                 'coin': coin,
-                                'price': Decimal(Decimal(market_data.get('Last', 0)) * current_price),
-                                'provider': 'Bittrex_{}_market'.format(base_coin)
+                                'price': Decimal(Decimal(market_data.get('last', 0)) * current_price),
+                                'provider': 'Altilly_{}_market'.format(base_coin)
                             }
                         )
 

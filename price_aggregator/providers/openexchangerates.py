@@ -35,12 +35,17 @@ class OpenExchangeRates(object):
             return None, 'no rates found in data: {}'.format(data)
 
         search_codes = [coin.code.upper() for coin in currencies]
-        output = {}
+        output = []
 
         for currency in rates:
             if currency in search_codes:
                 for coin in currencies:
                     if coin.code.upper() == currency:
-                        output[coin] = Decimal(1 / rates.get(currency))
+                        output.append(
+                            {
+                                'coin': coin,
+                                'price': Decimal(1 / rates.get(currency))
+                            }
+                        )
 
         return output, 'success'

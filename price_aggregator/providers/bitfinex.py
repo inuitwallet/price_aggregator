@@ -28,7 +28,7 @@ class Bitfinex(object):
             return None, 'no json: {}'.format(r.text)
 
         search_codes = [coin.code.upper() for coin in currencies]
-        output = {}
+        output = []
 
         for symbol in symbols:
             if 'usd' not in symbol:
@@ -53,6 +53,11 @@ class Bitfinex(object):
 
                 for coin in currencies:
                     if coin.code.upper() == cleaned_symbol.upper():
-                        output[coin] = Decimal(data.get('mid'))
+                        output.append(
+                            {
+                                'coin': coin,
+                                'price': Decimal(data.get('mid'))
+                            }
+                        )
 
         return output, 'success'

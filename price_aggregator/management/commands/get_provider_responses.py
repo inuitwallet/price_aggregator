@@ -88,25 +88,29 @@ class Command(BaseCommand):
                 continue
 
             # we have some price data
-            for currency in prices:
+            for price in prices:
+                try:
+                    provider = Provider.objects.get(name__iexact=price.get('provider', provider_name))
+                except Provider.DoesNotExist:
+                    provider = Provider.objects.create(name=price.get('provider', provider_name))
                 # if the provider is blacklisted, we skip
                 try:
-                    ProviderBlackList.objects.get(currency=currency, provider=provider)
+                    ProviderBlackList.objects.get(currency=price['coin'], provider=provider)
                     continue
                 except ProviderBlackList.DoesNotExist:
                     pass
 
                 if options['skip_save']:
                     logger.info(
-                        'Skipping save of {} from {}: {:.8f}'.format(currency, provider.name, prices.get(currency))
+                        'Skipping save of {} from {}: {:.8f}'.format(price['coin'], provider.name, price['price'])
                     )
                     continue
 
-                logger.info('Saving {} from {}: {:.8f}'.format(currency, provider.name, prices.get(currency)))
+                logger.info('Saving {} from {}: {:.8f}'.format(price['coin'], provider.name, price['price']))
 
                 ProviderResponse.objects.create(
                     provider=provider,
-                    currency=currency,
-                    value=prices.get(currency),
+                    currency=price['coin'],
+                    value=price['price'],
                     update_by=now() + timedelta(seconds=provider.cache)
                 )

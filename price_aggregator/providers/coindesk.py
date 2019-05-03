@@ -36,10 +36,15 @@ class CoinDesk(object):
         if not usd_data:
             return None, 'no USD Data: {]'.format(bpi)
 
-        output = {}
+        output = []
 
         for currency in currencies:
             if currency.code.upper() == 'BTC':
-                output[currency] = Decimal(usd_data.get('rate_float'))
+                output.append(
+                    {
+                        'coin': currency,
+                        'price': Decimal(usd_data.get('rate_float'))
+                    }
+                )
 
         return output, 'success'

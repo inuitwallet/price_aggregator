@@ -27,7 +27,7 @@ class BitcoinAverage(object):
             return None, 'no json: {}'.format(r.text)
 
         search_codes = [coin.code.upper() for coin in currencies]
-        output = {}
+        output = []
 
         for pair in data:
             coin_symbol = pair.replace('USD', '')
@@ -40,6 +40,11 @@ class BitcoinAverage(object):
 
                 for coin in currencies:
                     if coin.code.upper() == coin_symbol.upper():
-                        output[coin] = Decimal(pair_data.get('last'))
+                        output.append(
+                            {
+                                'coin': coin,
+                                'price': Decimal(pair_data.get('last'))
+                            }
+                        )
 
         return output, 'success'

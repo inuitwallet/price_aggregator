@@ -35,14 +35,19 @@ class CurrencyLayer(object):
             return None, 'no quotes in data: {]'.format(data)
 
         search_codes = [coin.code.upper() for coin in currencies]
-        output = {}
+        output = []
 
         for pair in quotes:
             currency_code = pair.replace('USD', '')
             if currency_code in search_codes:
                 for coin in currencies:
                     if coin.code.upper() == currency_code:
-                        output[coin] = Decimal(1 / quotes.get(pair))
+                        output.append(
+                            {
+                                'coin': coin,
+                                'price': Decimal(1 / quotes.get(pair))
+                            }
+                        )
 
         return output, 'success'
 
