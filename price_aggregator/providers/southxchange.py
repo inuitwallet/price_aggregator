@@ -76,17 +76,14 @@ class SouthXchange(object):
 
                 for coin in currencies:
                     if coin.code.upper() == market_coin:
-                        ask_price = market_data.get('Ask', 0)
+                        price = market_data.get('Last', 0.0)
 
-                        if ask_price is None:
-                            ask_price = 0
+                        if price is None:
+                            price = 0.0
 
-                        bid_price = market_data.get('Bid', 0)
+                        if price > 0.0:
+                            price = Decimal(1 / price)
 
-                        if bid_price is None:
-                            bid_price = 0
-
-                        price = 1 / Decimal((ask_price + bid_price) / 2)
                         output.append(
                             {
                                 'coin': coin,
