@@ -54,7 +54,7 @@ class Command(BaseCommand):
 
             cleaned_responses = self.remove_outliers(currency, valid_responses)
 
-            cleaned_values = np.array([float(resp.value) for resp in cleaned_responses if resp.value > 0])
+            cleaned_values = np.array([float(resp.value) for resp in cleaned_responses if resp.value > Decimal(0)])
 
             logger.info(
                 'Got aggregated price of {} for {}'.format(np.mean(cleaned_values), currency)
