@@ -89,8 +89,6 @@ class SouthXchange(object):
                         if price > 0.0:
                             price = Decimal(1.0 / float(price))
 
-                        print(price, current_price, price * current_price)
-
                         output.append(
                             {
                                 'coin': coin,
