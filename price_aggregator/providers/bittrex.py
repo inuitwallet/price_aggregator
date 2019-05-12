@@ -1,8 +1,10 @@
 import logging
+import math
 from decimal import Decimal
 
 import requests
 from django.conf import settings
+from numpy import NaN
 
 from price_aggregator.models import AggregatedPrice
 
@@ -62,7 +64,7 @@ class Bittrex(object):
 
                         if current_agg_price is None:
                             # save as None if not found. Saves hitting the database again and we can handle in a bit
-                            current_prices[base_coin] = None
+                            current_prices[base_coin] = Decimal(0)
                             continue
 
                         current_prices[base_coin] = current_agg_price.aggregated_price
@@ -70,9 +72,12 @@ class Bittrex(object):
                     # get the price from the current_prices dict
                     current_price = current_prices.get(base_coin)
 
-                    if current_price is None:
-                        # skip this one as we don't have a USD calculation
-                        continue
+                if current_price is None:
+                    # skip this one as we don't have a USD calculation
+                    continue
+
+                if math.isnan(current_price):
+                    continue
 
                 for coin in currencies:
                     if coin.code.upper() == market_coin:

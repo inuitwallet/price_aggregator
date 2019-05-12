@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 from decimal import Decimal
 from statistics import mean, pstdev, pvariance
 
@@ -12,31 +13,24 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     def remove_outliers(self, currency, valid_responses, num_stdev=1.0):
-        if valid_responses.count() <= 2:
-            return [resp for resp in valid_responses]
+        ys = [float(resp.value) for resp in valid_responses]
+        quartile_1, quartile_3 = np.percentile(ys, [25, 75])
+        iqr = quartile_3 - quartile_1
+        lower_bound = quartile_1 - (iqr * 1.5)
+        upper_bound = quartile_3 + (iqr * 1.5)
 
-        if num_stdev > currency.max_std_dev:
-            return [resp for resp in valid_responses]
+        cleaned_values = []
 
-        cleaned_responses = []
-        prices = [resp.value for resp in valid_responses]
-        mu = mean(prices)
-        stdev = pstdev(prices, mu)
-        stdev_value = (Decimal(num_stdev) * stdev)
-
-        for resp in valid_responses:
-            if resp.value > (mu + stdev_value):
+        for response in valid_responses:
+            if float(response.value) > float(upper_bound):
                 continue
 
-            if resp.value < (mu - stdev_value):
+            if float(response.value) < float(lower_bound):
                 continue
 
-            cleaned_responses.append(resp)
+            cleaned_values.append(response)
 
-        if len(cleaned_responses) < currency.min_providers:
-            return self.remove_outliers(currency, valid_responses, (num_stdev + 0.1))
-
-        return cleaned_responses
+        return cleaned_values
 
     def handle(self, *args, **options):
         for currency in Currency.objects.all():
@@ -60,19 +54,17 @@ class Command(BaseCommand):
 
             cleaned_responses = self.remove_outliers(currency, valid_responses)
 
-            # calculate the mean of all prices
-            prices = [resp.value for resp in cleaned_responses]
-            agg_price = mean(prices)
+            cleaned_values = np.array([float(resp.value) for resp in cleaned_responses])
 
             logger.info(
-                'Got aggregated price of {} for {}'.format(agg_price, currency)
+                'Got aggregated price of {} for {}'.format(np.mean(cleaned_values), currency)
             )
             aggregated_price = AggregatedPrice.objects.create(
                 currency=currency,
-                aggregated_price=agg_price,
-                providers=len(prices),
-                standard_deviation=pstdev(prices, agg_price),
-                variance=pvariance(prices, agg_price)
+                aggregated_price=np.mean(cleaned_values),
+                providers=cleaned_values.size,
+                standard_deviation=np.std(cleaned_values),
+                variance=np.var(cleaned_values)
             )
 
             for resp in cleaned_responses:

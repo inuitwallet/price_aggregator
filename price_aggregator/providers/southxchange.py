@@ -1,8 +1,10 @@
 import logging
+import math
 from decimal import Decimal
 
 import requests
 from django.conf import settings
+import numpy as np
 
 from price_aggregator.models import AggregatedPrice
 
@@ -70,19 +72,24 @@ class SouthXchange(object):
                     # get the price from the current_prices dict
                     current_price = current_prices.get(base_coin)
 
-                    if current_price is None:
-                        # skip this one as we don't have a USD calculation
-                        continue
+                if current_price is None:
+                    # skip this one as we don't have a USD calculation
+                    continue
+
+                if math.isnan(current_price):
+                    continue
 
                 for coin in currencies:
                     if coin.code.upper() == market_coin:
-                        price = market_data.get('Last', 0.0)
+                        price = Decimal(market_data.get('Last', 0.0))
 
                         if price is None:
-                            price = 0.0
+                            price = Decimal(0.0)
 
                         if price > 0.0:
-                            price = Decimal(1 / price)
+                            price = Decimal(1.0 / float(price))
+
+                        print(price, current_price, price * current_price)
 
                         output.append(
                             {
