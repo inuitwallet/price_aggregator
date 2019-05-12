@@ -92,7 +92,7 @@ class Altilly(object):
 
                 for coin in currencies:
                     if coin.code.upper() == market_coin:
-                        price = Decimal((market_data.get('ask', 0.0) + market_data.get('bid', 0.0)) / 2)
+                        price = Decimal(float(market_data.get('ask', 0.0)) + float(market_data.get('bid', 0.0)) / 2.0)
                         output.append(
                             {
                                 'coin': coin,
