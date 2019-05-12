@@ -18,6 +18,7 @@ from .exchangeratelab import ExchangeRateLab
 from .fixer import Fixer
 from .nu import Nu
 from .openexchangerates import OpenExchangeRates
+from .southxchange import SouthXchange
 
 __all__ = [
     'Altilly',
@@ -40,4 +41,5 @@ __all__ = [
     'Fixer',
     'Nu',
     'OpenExchangeRates',
+    'SouthXchange',
 ]

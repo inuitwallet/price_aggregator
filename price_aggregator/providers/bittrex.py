@@ -76,10 +76,12 @@ class Bittrex(object):
 
                 for coin in currencies:
                     if coin.code.upper() == market_coin:
+                        price = Decimal((market_data.get('Ask', 0) + market_data.get('Bid', 0)) / 2)
                         output.append(
                             {
                                 'coin': coin,
-                                'price': Decimal(Decimal(market_data.get('Last', 0)) * current_price),
+                                'price': Decimal(price * current_price),
+                                'market_price': price,
                                 'provider': 'Bittrex_{}_market'.format(base_coin)
                             }
                         )

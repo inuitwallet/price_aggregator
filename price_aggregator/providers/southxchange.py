@@ -9,30 +9,17 @@ from price_aggregator.models import AggregatedPrice
 logger = logging.getLogger(__name__)
 
 
-class Altilly(object):
+class SouthXchange(object):
     """
-    https://www.altilly.com/page/restapi
+    https://www.southxchange.com/Home/Api#prices
     """
     @staticmethod
     def get_prices(currencies):
-        logger.info('Altilly: Getting prices')
-
-        # get the market symbols
-        r = requests.get(
-            url='https://api.altilly.com/api/public/symbol'
-        )
-
-        if r.status_code != requests.codes.ok:
-            return None, 'bad status code: {}'.format(r.status_code)
-
-        try:
-            symbols = r.json()
-        except ValueError:
-            return None, 'no json: {}'.format(r.text)
+        logger.info('SouthXchange: Getting prices')
 
         # get the market summaries
         r = requests.get(
-            url='https://api.altilly.com/api/public/ticker'
+            url='https://www.southxchange.com/api/prices'
         )
 
         if r.status_code != requests.codes.ok:
@@ -49,17 +36,14 @@ class Altilly(object):
         current_prices = {}
 
         for market_data in data:
-            market_symbol = market_data.get('symbol')
-            market_coin = None
-            base_coin = None
-
-            for symbol in symbols:
-                if symbol.get('id') == market_symbol:
-                    # Altilly have their currencies inverted for some reason
-                    base_coin = symbol.get('quoteCurrency')
-                    market_coin = symbol.get('baseCurrency')
+            market = market_data.get('Market')
+            base_coin = market.split('/')[0]
+            market_coin = market.split('/')[1]
 
             if not market_coin:
+                continue
+
+            if market_coin not in ['USNBT', 'NSR']:
                 continue
 
             if not base_coin:
@@ -92,13 +76,23 @@ class Altilly(object):
 
                 for coin in currencies:
                     if coin.code.upper() == market_coin:
-                        price = Decimal((market_data.get('ask', 0) + market_data.get('bid', 0)) / 2)
+                        ask_price = market_data.get('Ask', 0)
+
+                        if ask_price is None:
+                            ask_price = 0
+
+                        bid_price = market_data.get('Bid', 0)
+
+                        if bid_price is None:
+                            bid_price = 0
+
+                        price = 1 / Decimal((ask_price + bid_price) / 2)
                         output.append(
                             {
                                 'coin': coin,
                                 'price': Decimal(price * current_price),
                                 'market_price': price,
-                                'provider': 'Altilly_{}_market'.format(base_coin)
+                                'provider': 'SouthXchange_{}_market'.format(base_coin)
                             }
                         )
 

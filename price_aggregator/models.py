@@ -138,6 +138,11 @@ class ProviderResponse(models.Model):
         max_digits=25,
         default=0
     )
+    market_value = models.DecimalField(
+        decimal_places=10,
+        max_digits=25,
+        default=0
+    )
     update_by = models.DateTimeField()
 
     objects = ProviderResponseManager()
@@ -196,6 +201,7 @@ class ProviderResponse(models.Model):
             'currency_name': self.currency.name,
             'date_time': self.date_time,
             'usd_price': float('{:.8f}'.format(self.value)),
+            'market_price': float('{:.8f}'.format(self.market_value)),
             'moving_averages': self.calculate_moving_averages()
         }
 
