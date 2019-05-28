@@ -113,5 +113,6 @@ class Command(BaseCommand):
                     currency=price['coin'],
                     value=price['price'],
                     market_value=price.get('market_price', 0),
+                    volume=price.get('volume'),
                     update_by=now() + timedelta(seconds=provider.cache)
                 )

@@ -143,6 +143,28 @@ class ProviderResponse(models.Model):
         max_digits=25,
         default=0
     )
+    # buy_value = models.DecimalField(
+    #     decimal_places=10,
+    #     max_digits=25,
+    #     default=0
+    # )
+    # sell_value = models.DecimalField(
+    #     decimal_places=10,
+    #     max_digits=25,
+    #     default=0
+    # )
+    volume = models.DecimalField(
+        decimal_places=10,
+        max_digits=25,
+        blank=True,
+        null=True
+    )
+    parent_response = models.ForeignKey(
+        'ProviderResponse',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
     update_by = models.DateTimeField()
 
     objects = ProviderResponseManager()
@@ -197,16 +219,27 @@ class ProviderResponse(models.Model):
 
     def serialize(self):
         serialized_data = {
+            'provider': self.provider.name,
             'currency': self.currency.code,
             'currency_name': self.currency.name,
             'date_time': self.date_time,
             'usd_price': float('{:.8f}'.format(self.value)),
-            'market_price': float('{:.8f}'.format(self.market_value)),
             'moving_averages': self.calculate_moving_averages()
         }
 
         if self.date_time < (now() - datetime.timedelta(hours=24)):
             serialized_data['warning'] = 'Price is older than 24 hours. Use with caution'
+
+        if self.market_value is not None:
+            serialized_data['market_price'] = float('{:.8f}'.format(self.market_value))
+
+        if self.volume is not None:
+            serialized_data['volume'] = float('{:.8f}'.format(self.volume))
+
+        if self.providerresponse_set.all().count() > 0:
+            serialized_data['combined_responses'] = [
+                resp.serialize() for resp in self.providerresponse_set.all()
+            ]
 
         return serialized_data
 
@@ -348,12 +381,7 @@ class AggregatedPrice(models.Model):
             'standard_deviation': float('{:.8f}'.format(self.standard_deviation)),
             'variance': float('{:.8f}'.format(self.variance)),
             'prices_used': [
-                {
-                    'name': resp.provider.name,
-                    'value': float('{:.8f}'.format(resp.value)),
-                    'collection_date_time': resp.date_time,
-                    'cache_seconds': float('{:0f}'.format(resp.provider.cache))
-                } for resp in self.used_responses.all()
+                resp.serialize() for resp in self.used_responses.all()
             ],
             'moving_averages': self.calculate_moving_averages()
         }

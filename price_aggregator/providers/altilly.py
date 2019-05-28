@@ -100,8 +100,9 @@ class Altilly(object):
                             {
                                 'coin': coin,
                                 'price': Decimal(Decimal(market_data.get('last', 0.0)) * current_price),
-                                'market_price': market_data.get('last', 0.0),
-                                'provider': 'Altilly_{}_market'.format(base_coin)
+                                'market_price': Decimal(market_data.get('last', 0.0)),
+                                'provider': 'Altilly_{}_market'.format(base_coin),
+                                'volume': Decimal(market_data.get('volume', 0.0))
                             }
                         )
 

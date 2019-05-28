@@ -94,7 +94,8 @@ class SouthXchange(object):
                                 'coin': coin,
                                 'price': Decimal(price * current_price),
                                 'market_price': price,
-                                'provider': 'SouthXchange_{}_market'.format(base_coin)
+                                'provider': 'SouthXchange_{}_market'.format(base_coin),
+                                'volume': Decimal(Decimal(market_data.get('Volume24Hr', 0.0)) * current_price)
                             }
                         )
 
