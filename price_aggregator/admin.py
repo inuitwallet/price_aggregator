@@ -7,11 +7,12 @@ from price_aggregator.models import Currency, Provider, AggregatedPrice, Provide
 @admin.register(Provider)
 class ProviderAdmin(admin.ModelAdmin):
     list_display = ['name', 'cache', 'active']
+    list_editable = ['active']
 
 
 @admin.register(ProviderResponse)
 class ProviderResponseAdmin(admin.ModelAdmin):
-    list_display = ['date_time', 'provider', 'currency', 'value', 'update_by']
+    list_display = ['date_time', 'provider', 'currency', 'value', 'volume', 'update_by']
     list_filter = ['provider', 'currency']
     raw_id_fields = ['provider', 'currency']
 
@@ -41,4 +42,5 @@ class ProviderBlackList(admin.ModelAdmin):
 @admin.register(NuMarketMaker)
 class NuMarketMakerAdmin(admin.ModelAdmin):
     list_display = ['currency', 'market_maker_price', 'market_target', 'market_movement', 'multiplier']
+    list_editable = ['market_maker_price']
     raw_id_fields = ['currency', 'multiplier']
