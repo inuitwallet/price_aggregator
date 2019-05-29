@@ -1,4 +1,6 @@
+import datetime
 import logging
+import os
 from decimal import Decimal
 
 import numpy as np
@@ -77,6 +79,19 @@ class Command(BaseCommand):
         return valid_responses
 
     def handle(self, *args, **options):
+        # check for lock file
+        if os.path.exists('aggregates.lock'):
+            last_aggregated_price = AggregatedPrice.objects.all().first()
+
+            if last_aggregated_price.date_time < now() - datetime.timedelta(minutes=10):
+                print('No aggregated prices for 10 minutes. Ignoring lock')
+            else:
+                print('Already running')
+                return
+
+        # if we got here we should lock
+        open('aggregates.lock', 'w+').close()
+
         for currency in Currency.objects.all():
             logger.info('Working on {}'.format(currency))
 
@@ -120,3 +135,6 @@ class Command(BaseCommand):
 
             for resp in cleaned_responses:
                 aggregated_price.used_responses.add(resp)
+
+        # we're done. remove the lock
+        os.remove('aggregates.lock')

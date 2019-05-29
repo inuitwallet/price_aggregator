@@ -122,3 +122,6 @@ ve/
 .idea/
 
 .dump
+
+aggregates.lock
+
