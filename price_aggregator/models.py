@@ -195,8 +195,6 @@ class ProviderResponse(models.Model):
             provider=self.provider,
             currency=self.currency,
             date_time__gt=(self.date_time - datetime.timedelta(hours=24))
-        ).order_by(
-            '-date_time'
         )
 
         if not values:
@@ -204,10 +202,6 @@ class ProviderResponse(models.Model):
 
         # calculate the moving averages
         moving_averages = {
-            '24_hour': 1440,
-            '12_hour': 720,
-            '6_hour': 360,
-            '1_hour': 60,
             '30_minute': 30
         }
 
