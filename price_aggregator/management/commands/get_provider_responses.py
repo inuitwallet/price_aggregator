@@ -55,8 +55,6 @@ class Command(BaseCommand):
             # see if the cache time has lapsed
             last_response = ProviderResponse.objects.filter(
                 provider=provider
-            ).order_by(
-                '-date_time'
             ).first()
 
             if last_response and not options['force']:
