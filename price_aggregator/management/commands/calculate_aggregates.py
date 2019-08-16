@@ -38,6 +38,7 @@ class Command(BaseCommand):
         # some responses come from exchange pairs so should be weighted by volume
         valid_responses = []
         weighted_responses = []
+        used_providers = []
 
         for response in responses:
             if response.volume is None:
@@ -45,6 +46,10 @@ class Command(BaseCommand):
                 valid_responses.append(response)
                 continue
 
+            if response.provider in used_providers:
+                continue
+
+            used_providers.append(response.provider)
             weighted_responses.append(response)
 
         if len(weighted_responses) > 0 and sum([float(resp.volume) for resp in weighted_responses]) > 0.0:
@@ -101,12 +106,13 @@ class Command(BaseCommand):
                 currency=currency,
                 update_by__gte=now(),
                 provider__active=True
-            ).order_by(
-                'provider',
-                '-date_time'
-            ).distinct(
-                'provider'
             )
+            # ).order_by(
+            #     'provider',
+            #     '-date_time'
+            # ).distinct(
+            #     'provider'
+            # )
 
             if db_responses.count() == 0:
                 logger.warning('Got no valid responses for {}'.format(currency))

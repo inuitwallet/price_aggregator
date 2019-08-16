@@ -125,3 +125,4 @@ ve/
 
 aggregates.lock
 
+**/test_thing*
