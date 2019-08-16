@@ -7,7 +7,8 @@ from django.utils.timezone import now
 
 class Provider(models.Model):
     name = models.CharField(
-        max_length=255
+        max_length=255,
+        db_index=True
     )
     cache = models.IntegerField(
         default=300
@@ -127,16 +128,19 @@ class ProviderResponse(models.Model):
     )
     provider = models.ForeignKey(
         Provider,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        db_index=True
     )
     currency = models.ForeignKey(
         Currency,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        db_index=True
     )
     value = models.DecimalField(
         decimal_places=10,
         max_digits=25,
-        default=0
+        default=0,
+        db_index=True
     )
     market_value = models.DecimalField(
         decimal_places=10,
@@ -157,13 +161,15 @@ class ProviderResponse(models.Model):
         decimal_places=10,
         max_digits=25,
         blank=True,
-        null=True
+        null=True,
+        db_index=True
     )
     parent_response = models.ForeignKey(
         'ProviderResponse',
         on_delete=models.CASCADE,
         blank=True,
-        null=True
+        null=True,
+        db_index=True
     )
     update_by = models.DateTimeField()
 
@@ -306,12 +312,14 @@ class AggregatedPrice(models.Model):
     )
     aggregated_price = models.DecimalField(
         decimal_places=10,
-        max_digits=25
+        max_digits=25,
+        db_index=True
     )
     providers = models.DecimalField(
         decimal_places=10,
         max_digits=25,
-        default=0
+        default=0,
+        db_index=True
     )
     standard_deviation = models.DecimalField(
         decimal_places=10,
