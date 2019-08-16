@@ -32,7 +32,7 @@ class CurrencyLayer(object):
         quotes = data.get('quotes')
 
         if not quotes:
-            return None, 'no quotes in data: {]'.format(data)
+            return None, 'no quotes in data: {}'.format(data)
 
         search_codes = [coin.code.upper() for coin in currencies]
         output = []
