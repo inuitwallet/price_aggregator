@@ -10,6 +10,7 @@ from .coindesk import CoinDesk
 from .coinhills import CoinHills
 from .coinigy import Coinigy
 from .coinmarketcap import CoinMarketCap
+from .coinmarketcappro import CoinMarketCapPro
 from .cryptocompare import CryptoCompare
 from .cryptonator import Cryptonator
 from .currencylayer import CurrencyLayer
@@ -33,6 +34,7 @@ __all__ = [
     'Coinigy',
     'CoinHills',
     'CoinMarketCap',
+    'CoinMarketCapPro',
     'CryptoCompare',
     'Cryptonator',
     'CurrencyLayer',
