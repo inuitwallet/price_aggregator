@@ -101,7 +101,6 @@ class Command(BaseCommand):
         for currency in Currency.objects.all():
             t = Thread(target=self.calculate_aggregate, kwargs={'currency': currency})
             t.start()
-            t.join()
 
         # we're done. remove the lock
         os.remove('aggregates.lock')
