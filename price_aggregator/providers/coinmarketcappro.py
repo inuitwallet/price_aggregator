@@ -53,7 +53,8 @@ class CoinMarketCapPro(object):
                     output.append(
                         {
                             'coin': currency,
-                            'price': Decimal(coin_data[coin].get('quote', {}).get('USD', {}).get('price', 0))
+                            'price': Decimal(coin_data[coin].get('quote', {}).get('USD', {}).get('price', 0)),
+                            'volume': Decimal(coin_data[coin].get('quote', {}).get('USD', {}).get('volume_24h', 0))
                         }
                     )
 
