@@ -2,6 +2,7 @@ import datetime
 import logging
 import os
 from decimal import Decimal
+from threading import Thread
 
 import numpy as np
 from django.core.management import BaseCommand
@@ -98,49 +99,54 @@ class Command(BaseCommand):
         open('aggregates.lock', 'w+').close()
 
         for currency in Currency.objects.all():
-            logger.info('Working on {}'.format(currency))
-
-            # get the distinct providers from the provider responses
-            # this query ensures we get only the latest price from each provider
-            db_responses = ProviderResponse.objects.filter(
-                currency=currency,
-                update_by__gte=now(),
-                provider__active=True
-            )
-            # ).order_by(
-            #     'provider',
-            #     '-date_time'
-            # ).distinct(
-            #     'provider'
-            # )
-
-            if db_responses.count() == 0:
-                logger.warning('Got no valid responses for {}'.format(currency))
-                continue
-
-            # get valid responses
-            # this includes calculating a weighted mean of any volume bound values
-            valid_responses = self.calculate_weighted_mean(currency, db_responses)
-
-            # now we can remove outliers
-            cleaned_responses = self.remove_outliers(valid_responses)
-
-            # we just want the values in order to use the numpy functions below
-            cleaned_values = [float(resp.value) for resp in cleaned_responses if resp.value > Decimal(0)]
-
-            logger.info(
-                'Got aggregated price of {} for {}'.format(np.mean(cleaned_values), currency)
-            )
-            aggregated_price = AggregatedPrice.objects.create(
-                currency=currency,
-                aggregated_price=np.mean(cleaned_values),
-                providers=len(cleaned_values),
-                standard_deviation=np.std(cleaned_values),
-                variance=np.var(cleaned_values)
-            )
-
-            for resp in cleaned_responses:
-                aggregated_price.used_responses.add(resp)
+            t = Thread(target=self.calculate_aggregate, kwargs={'currency': currency})
+            t.start()
+            t.join()
 
         # we're done. remove the lock
         os.remove('aggregates.lock')
+
+    def calculate_aggregate(self, currency):
+        logger.info('Working on {}'.format(currency))
+
+        # get the distinct providers from the provider responses
+        # this query ensures we get only the latest price from each provider
+        db_responses = ProviderResponse.objects.filter(
+            currency=currency,
+            update_by__gte=now(),
+            provider__active=True
+        )
+        # ).order_by(
+        #     'provider',
+        #     '-date_time'
+        # ).distinct(
+        #     'provider'
+        # )
+
+        if db_responses.count() == 0:
+            logger.warning('Got no valid responses for {}'.format(currency))
+            return
+
+        # get valid responses
+        # this includes calculating a weighted mean of any volume bound values
+        valid_responses = self.calculate_weighted_mean(currency, db_responses)
+
+        # now we can remove outliers
+        cleaned_responses = self.remove_outliers(valid_responses)
+
+        # we just want the values in order to use the numpy functions below
+        cleaned_values = [float(resp.value) for resp in cleaned_responses if resp.value > Decimal(0)]
+
+        logger.info(
+            'Got aggregated price of {} for {}'.format(np.mean(cleaned_values), currency)
+        )
+        aggregated_price = AggregatedPrice.objects.create(
+            currency=currency,
+            aggregated_price=np.mean(cleaned_values),
+            providers=len(cleaned_values),
+            standard_deviation=np.std(cleaned_values),
+            variance=np.var(cleaned_values)
+        )
+
+        for resp in cleaned_responses:
+            aggregated_price.used_responses.add(resp)
