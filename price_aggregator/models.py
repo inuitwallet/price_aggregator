@@ -16,6 +16,9 @@ class Provider(models.Model):
     active = models.BooleanField(
         default=True
     )
+    exchange_provider = models.BooleanField(
+        default=False
+    )
 
     def __str__(self):
         return self.name

@@ -126,3 +126,4 @@ ve/
 aggregates.lock
 
 **/test_thing*
+celerybeat.pid

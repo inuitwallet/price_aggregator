@@ -45,9 +45,13 @@ class Command(BaseCommand):
         used_providers = []
 
         for response in responses:
-            if response.volume is None:
-                # we can assume that there is no volume hence this isn't an exchange response
+            if response.provider.market_provider:
+                # this is a market_provider so
+                if response.provider in used_providers:
+                    continue
+
                 valid_responses.append(response)
+                used_providers.append(response.provider)
                 continue
 
             if response.provider in used_providers:
@@ -111,12 +115,6 @@ class Command(BaseCommand):
                 update_by__gte=now(),
                 provider__active=True
             )
-            # ).order_by(
-            #     'provider',
-            #     '-date_time'
-            # ).distinct(
-            #     'provider'
-            # )
 
             if db_responses.count() == 0:
                 logger.warning('Got no valid responses for {}'.format(currency))

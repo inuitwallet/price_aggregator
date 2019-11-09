@@ -40,6 +40,8 @@ class Command(BaseCommand):
         currencies = Currency.objects.all()
 
         for provider_name in providers_names:
+            # make sure the named provider has been created
+            # (the add_providers management command can be run to add newly created ones)
             try:
                 provider = Provider.objects.get(name__iexact=provider_name)
             except Provider.DoesNotExist:
@@ -63,7 +65,7 @@ class Command(BaseCommand):
                 # use the timedelta to check if the cache is about to expire.
                 # Without this we get gaps in provider data.
                 # With it we get some overlap although cache times may need to be tweaked
-                cache_time = cache_time - timedelta(minutes=2)
+                cache_time = cache_time - timedelta(minutes=1)
 
                 if now() < cache_time:
                     logger.warning(
@@ -74,10 +76,12 @@ class Command(BaseCommand):
                     )
                     continue
 
+            # get the provider code and get the prices
             provider_wrapper = getattr(providers, provider.name)
             prices, message = provider_wrapper.get_prices(currencies=currencies)
 
             if prices is None:
+                # getting the prices failed. Log the error and move on
                 logger.error('{} failure: {}'.format(provider, message))
                 ProviderFailure.objects.create(
                     provider=provider,
@@ -87,30 +91,39 @@ class Command(BaseCommand):
 
             # we have some price data
             for price in prices:
+                # new providers can be created from new market data as 'market_providers'
+                # the name of the market_provider is passed back in the price data under the 'provider' key
                 try:
-                    provider = Provider.objects.get(name__iexact=price.get('provider', provider_name))
+                    price_provider = Provider.objects.get(name__iexact=price.get('provider', provider_name))
                 except Provider.DoesNotExist:
-                    provider = Provider.objects.create(name=price.get('provider', provider_name))
-                # if the provider is blacklisted, we skip
+                    # the market_provider field comes from the 'parent' provider
+                    price_provider = Provider.objects.create(
+                        name=price.get('provider', provider_name),
+                        market_provider=provider.market_provider,
+                        cache=provider.cache
+                    )
+
+                # if the provider is blacklisted, we skip.
+                # We perform this check here otherwise market_providers cannot be individually blacklisted
                 try:
-                    ProviderBlackList.objects.get(currency=price['coin'], provider=provider)
+                    ProviderBlackList.objects.get(currency=price['coin'], provider=price_provider)
                     continue
                 except ProviderBlackList.DoesNotExist:
                     pass
 
                 if options['skip_save']:
                     logger.info(
-                        'Skipping save of {} from {}: {:.8f}'.format(price['coin'], provider.name, price['price'])
+                        'Skipping save of {} from {}: {:.8f}'.format(price['coin'], price_provider.name, price['price'])
                     )
                     continue
 
-                logger.info('Saving {} from {}: {:.8f}'.format(price['coin'], provider.name, price['price']))
+                logger.info('Saving {} from {}: {:.8f}'.format(price['coin'], price_provider.name, price['price']))
 
                 ProviderResponse.objects.create(
-                    provider=provider,
+                    provider=price_provider,
                     currency=price['coin'],
                     value=price['price'],
                     market_value=price.get('market_price', 0),
                     volume=price.get('volume'),
-                    update_by=now() + timedelta(seconds=provider.cache)
+                    update_by=now() + timedelta(seconds=price_provider.cache)
                 )
