@@ -142,39 +142,28 @@ class ProviderResponse(models.Model):
     value = models.DecimalField(
         decimal_places=10,
         max_digits=25,
-        default=0,
-        db_index=True
+        default=0
     )
     market_value = models.DecimalField(
         decimal_places=10,
         max_digits=25,
         default=0
     )
-    # buy_value = models.DecimalField(
-    #     decimal_places=10,
-    #     max_digits=25,
-    #     default=0
-    # )
-    # sell_value = models.DecimalField(
-    #     decimal_places=10,
-    #     max_digits=25,
-    #     default=0
-    # )
     volume = models.DecimalField(
         decimal_places=10,
         max_digits=25,
         blank=True,
-        null=True,
-        db_index=True
+        null=True
     )
     parent_response = models.ForeignKey(
         'ProviderResponse',
         on_delete=models.CASCADE,
         blank=True,
-        null=True,
+        null=True
+    )
+    update_by = models.DateTimeField(
         db_index=True
     )
-    update_by = models.DateTimeField()
 
     objects = ProviderResponseManager()
 
