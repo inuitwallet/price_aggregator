@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'storages',
     'price_aggregator',
     'django_celery_beat',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,5 @@ LOGGING = {
         },
     },
 }
+
+CELERY_RESULT_BACKEND = 'django-db'
