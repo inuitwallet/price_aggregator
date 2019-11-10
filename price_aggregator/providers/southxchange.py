@@ -15,8 +15,22 @@ class SouthXchange(object):
     """
     https://www.southxchange.com/Home/Api#prices
     """
-    @staticmethod
-    def get_prices(currencies):
+    current_prices = {}
+
+    def get_coin_current_price(self, coin):
+        if coin not in self.current_prices:
+            current_agg_price = AggregatedPrice.objects.filter(
+                currency__code=coin
+            ).first()
+
+            if current_agg_price is None:
+                # save as None if not found. Saves hitting the database again and we can handle elsewhere
+                self.current_prices[coin] = None
+                return
+
+            self.current_prices[coin] = current_agg_price.aggregated_price
+
+    def get_prices(self, currencies):
         logger.info('SouthXchange: Getting prices')
 
         # get the market summaries
@@ -35,42 +49,64 @@ class SouthXchange(object):
         search_codes = [coin.code.upper() for coin in currencies]
 
         output = []
-        current_prices = {}
 
         for market_data in data:
             market = market_data.get('Market')
-            base_coin = market.split('/')[0]
-            market_coin = market.split('/')[1]
+            base_coin = market.split('/')[0].upper()
+            market_coin = market.split('/')[1].upper()
 
             if not market_coin:
                 continue
 
-            if market_coin not in ['USNBT', 'NSR']:
-                continue
-
             if not base_coin:
                 continue
+
+            if base_coin in search_codes:
+                # price is in 'market_coin'
+                # if 'market_coin isn't USD we need to convert to USD
+                current_price = 1
+
+                if market_coin != 'USD':
+                    # get the current price
+                    self.get_coin_current_price(market_coin)
+
+                    # get the price from the current_prices dict
+                    current_price = self.current_prices.get(market_coin)
+
+                if current_price is None:
+                    # skip this one as we don't have a USD calculation
+                    continue
+
+                if math.isnan(current_price):
+                    continue
+
+                for coin in currencies:
+                    if coin.code.upper() == base_coin:
+                        price = Decimal(market_data.get('Last', 0.0))
+
+                        if price is None:
+                            price = Decimal(0.0)
+
+                        output.append(
+                            {
+                                'coin': coin,
+                                'price': Decimal(price * current_price),
+                                'market_price': price,
+                                'provider': 'SouthXchange_{}_{}_market'.format(base_coin, market_coin),
+                                'volume': Decimal(Decimal(market_data.get('Volume24Hr', 0.0)) * current_price)
+                            }
+                        )
 
             if market_coin in search_codes:
                 # if the base coin isn't USD we need to convert to USD
                 current_price = 1
 
                 if base_coin != 'USD':
-                    if base_coin not in current_prices:
-                        # do this bit to save the current prices to reduce database hits
-                        current_agg_price = AggregatedPrice.objects.filter(
-                            currency__code=base_coin
-                        ).first()
-
-                        if current_agg_price is None:
-                            # save as None if not found. Saves hitting the database again and we can handle in a bit
-                            current_prices[base_coin] = None
-                            continue
-
-                        current_prices[base_coin] = current_agg_price.aggregated_price
+                    # get the current price
+                    self.get_coin_current_price(base_coin)
 
                     # get the price from the current_prices dict
-                    current_price = current_prices.get(base_coin)
+                    current_price = self.current_prices.get(base_coin)
 
                 if current_price is None:
                     # skip this one as we don't have a USD calculation
@@ -94,7 +130,7 @@ class SouthXchange(object):
                                 'coin': coin,
                                 'price': Decimal(price * current_price),
                                 'market_price': price,
-                                'provider': 'SouthXchange_{}_market'.format(base_coin),
+                                'provider': 'SouthXchange_{}_{}_market'.format(base_coin, market_coin),
                                 'volume': Decimal(Decimal(market_data.get('Volume24Hr', 0.0)) * current_price)
                             }
                         )
