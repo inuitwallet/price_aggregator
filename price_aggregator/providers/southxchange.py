@@ -45,6 +45,9 @@ class SouthXchange(object):
             if not market_coin:
                 continue
 
+            if market_coin not in ['USNBT', 'NSR']:
+                continue
+
             if not base_coin:
                 continue
 
