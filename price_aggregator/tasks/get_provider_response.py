@@ -55,7 +55,7 @@ def get_provider_response(provider_name):
             raise Ignore()
 
     # get the provider code and get the prices
-    provider_wrapper = getattr(providers, provider.name)
+    provider_wrapper = getattr(providers, provider.name)()
     prices, message = provider_wrapper.get_prices(currencies=currencies)
 
     if prices is None:
@@ -77,7 +77,7 @@ def get_provider_response(provider_name):
             # the market_provider field comes from the 'parent' provider
             price_provider = Provider.objects.create(
                 name=price.get('provider', provider_name),
-                market_provider=provider.market_provider,
+                exchange_provider=provider.exchange_provider,
                 cache=provider.cache
             )
 
