@@ -8,6 +8,8 @@ from price_aggregator.models import Currency, Provider, AggregatedPrice, Provide
 class ProviderAdmin(admin.ModelAdmin):
     list_display = ['name', 'cache', 'active', 'exchange_provider']
     list_editable = ['active', 'exchange_provider']
+    list_filter = ['name']
+    search_fields = ['name']
 
 
 @admin.register(ProviderResponse)
