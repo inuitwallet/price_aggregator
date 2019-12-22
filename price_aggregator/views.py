@@ -19,7 +19,7 @@ class IndexView(View):
         return JsonResponse(
             {
                 '1_site_name': 'Nu Price Aggregator',
-                '2_site_function': 'Collect prices of Currencies form various sources and aggregate them. '
+                '2_site_function': 'Collect prices of Currencies from various sources and aggregate them. '
                                    'The aim is to create a more stable price source that is not reliant on any '
                                    'single provider. Prices are displayed in USD',
                 '3_endpoints': [
