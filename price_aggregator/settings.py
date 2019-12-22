@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'channels',
     'storages',
     'price_aggregator',
     'django_celery_beat',
@@ -153,3 +152,11 @@ LOGGING = {
 }
 
 CELERY_RESULT_BACKEND = 'django-db'
+CELERY_TASK_SOFT_TIME_LIMIT = 60
+
+CELERY_TASK_ROUTES = {
+    'price_aggregator.tasks.periodic_tasks.*': {'queue': 'periodic_tasks'},
+    'price_aggregator.tasks.calculate_aggregate.calculate_aggregate': {'queue': 'aggregates'},
+    'price_aggregator.tasks.get_provider_response.get_provider_response': {'queue': 'provider_responses'},
+    'price_aggregator.tasks.get_ccxt_response.get_ccxt_response': {'queue': 'ccxt_responses'},
+}

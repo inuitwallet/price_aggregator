@@ -91,7 +91,12 @@ class PriceView(View):
                 {'error': 'no aggregated prices found for the last 24 hours'}
             )
 
-        return JsonResponse(agg_price.serialize(), json_dumps_params={'sort_keys': True})
+        style = 'short'
+
+        if 'full' in request.GET:
+            style = 'full'
+
+        return JsonResponse(agg_price.serialize(style), json_dumps_params={'sort_keys': True})
 
 
 class CurrencyChooseView(View):

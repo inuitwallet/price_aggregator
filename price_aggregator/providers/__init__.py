@@ -4,6 +4,7 @@ from .bitfinex import Bitfinex
 from .bitstamp import BitStamp
 from .bitstamp_eur import BitStampEur
 from .bittrex import Bittrex
+from .ccxt import CCXT
 from .coinapi import CoinApi
 from .coinbase import CoinBase
 from .coindesk import CoinDesk
@@ -28,6 +29,7 @@ __all__ = [
     'BitStamp',
     'BitStampEur',
     'Bittrex',
+    'CCXT',
     'CoinApi',
     'CoinBase',
     'CoinDesk',

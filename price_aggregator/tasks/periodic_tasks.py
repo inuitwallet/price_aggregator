@@ -1,3 +1,4 @@
+import ccxt
 from celery import signature, group
 
 from price_aggregator import providers
@@ -11,7 +12,41 @@ logger = get_task_logger(__name__)
 
 
 @app.task
-def get_provider_responses():
+def get_ccxt_responses():
+    """
+    Get the ticker responses from the CCXT wrapper
+    """
+    exchange_list = []
+
+    for exchange in ccxt.exchanges:
+        try:
+            wrapper = getattr(ccxt, exchange)()
+        except Exception:
+            continue
+
+        if not wrapper.has['fetchTicker']:
+            logger.info('No ticker available for {}'.format(exchange.title()))
+            continue
+
+        # generate a task signature for this exchange
+        exchange_sig = signature(
+            getattr(tasks, 'get_ccxt_response'),
+            kwargs={
+                'exchange': exchange
+            },
+            immutable=True
+        )
+        # append to the list of signatures
+        exchange_list.append(exchange_sig)
+
+    # turn the list of signatures into a Celery group
+    exchange_group = group(exchange_list)
+    # then run the group
+    exchange_group.apply_async()
+
+
+@app.task
+def get_provider_responses(provider=None):
     """
     Get the price responses from the various providers
     """
@@ -19,6 +54,8 @@ def get_provider_responses():
     provider_list = []
 
     for provider_name in providers_names:
+        if provider is not None and provider_name != provider:
+            continue
         # generate a task signature for this provider
         provider_sig = signature(
             getattr(tasks, 'get_provider_response'),
@@ -59,5 +96,3 @@ def calculate_aggregates():
     aggregate_group = group(aggregate_list)
     # then run the group
     aggregate_group.apply_async()
-
-

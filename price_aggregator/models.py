@@ -1,4 +1,5 @@
 import datetime
+import math
 from statistics import mean
 
 from django.db import models
@@ -203,7 +204,12 @@ class ProviderResponse(models.Model):
             ).values_list('value', flat=True)
 
             if len(agg_list) > 1:
-                moving_averages[period] = float('{:.8f}'.format(mean(agg_list)))
+                avg = mean(agg_list)
+
+                if not math.isnan(avg):
+                    moving_averages[period] = float('{:.8f}'.format(mean(agg_list)))
+                else:
+                    del moving_averages[period]
             else:
                 del moving_averages[period]
 
@@ -340,9 +346,6 @@ class AggregatedPrice(models.Model):
 
         if not agg_prices:
             return {}
-            # JsonResponse(
-            #     {'error': 'no aggregated prices found for the last 24 hours'}
-            # )
 
         # calculate the moving averages
         moving_averages = {
@@ -359,26 +362,33 @@ class AggregatedPrice(models.Model):
             ).values_list('aggregated_price', flat=True)
 
             if len(agg_list) > 1:
-                moving_averages[period] = float('{:.8f}'.format(mean(agg_list)))
+                avg = mean(agg_list)
+
+                if not math.isnan(avg):
+                    moving_averages[period] = float('{:.8f}'.format(avg))
+                else:
+                    del moving_averages[period]
             else:
                 del moving_averages[period]
 
         return moving_averages
 
-    def serialize(self):
+    def serialize(self, style):
         serialized_data = {
             'currency': self.currency.code,
+            'moving_averages': self.calculate_moving_averages(),
             'currency_name': self.currency.name,
             'aggregation_date_time': self.date_time,
-            'aggregated_usd_price': float('{:.8f}'.format(self.aggregated_price)),
-            'number_of_providers': float('{:.0f}'.format(self.providers)),
-            'standard_deviation': float('{:.8f}'.format(self.standard_deviation)),
-            'variance': float('{:.8f}'.format(self.variance)),
-            'prices_used': [
-                resp.serialize() for resp in self.used_responses.all()
-            ],
-            'moving_averages': self.calculate_moving_averages()
+            'aggregated_usd_price': float('{:.8f}'.format(self.aggregated_price))
         }
+
+        if style == 'full':
+            serialized_data['number_of_providers'] = float('{:.0f}'.format(self.providers))
+            serialized_data['standard_deviation'] = float('{:.8f}'.format(self.standard_deviation))
+            serialized_data['variance'] = float('{:.8f}'.format(self.variance))
+            serialized_data['prices_used'] = [
+                resp.serialize() for resp in self.used_responses.all()
+            ]
 
         if self.date_time < (now() - datetime.timedelta(hours=24)):
             serialized_data['warning'] = 'Price is older than 24 hours. Use with caution'

@@ -1,13 +1,13 @@
+import math
 from decimal import Decimal
 
 import numpy as np
-
 from celery.exceptions import Ignore
+from celery.utils.log import get_task_logger
 from django.utils.timezone import now
 
 from price_aggregator.celery import app
 from price_aggregator.models import Currency, ProviderResponse, Provider, AggregatedPrice
-from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
 
@@ -69,6 +69,9 @@ def calculate_weighted_mean(currency, responses):
     used_providers = []
 
     for response in responses:
+        if math.isnan(response.value):
+            continue
+
         if response.provider in used_providers:
             continue
 

@@ -58,8 +58,6 @@ def get_provider_response(provider_name):
     provider_wrapper = getattr(providers, provider.name)()
     prices, message = provider_wrapper.get_prices(currencies=currencies)
 
-    print(prices, message)
-
     if prices is None:
         # getting the prices failed. Log the error and move on
         logger.error('{} failure: {}'.format(provider, message))
