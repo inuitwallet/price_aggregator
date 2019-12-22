@@ -1,9 +1,7 @@
-from .altilly import Altilly
 from .bitcoinaverage import BitcoinAverage
 from .bitfinex import Bitfinex
 from .bitstamp import BitStamp
 from .bitstamp_eur import BitStampEur
-from .bittrex import Bittrex
 from .ccxt import CCXT
 from .coinapi import CoinApi
 from .coinbase import CoinBase
@@ -20,15 +18,12 @@ from .exchangeratelab import ExchangeRateLab
 from .fixer import Fixer
 from .nu import Nu
 from .openexchangerates import OpenExchangeRates
-from .southxchange import SouthXchange
 
 __all__ = [
-    'Altilly',
     'BitcoinAverage',
     'Bitfinex',
     'BitStamp',
     'BitStampEur',
-    'Bittrex',
     'CCXT',
     'CoinApi',
     'CoinBase',
@@ -45,5 +40,4 @@ __all__ = [
     'Fixer',
     'Nu',
     'OpenExchangeRates',
-    'SouthXchange',
 ]

@@ -1,11 +1,10 @@
 import ccxt
 from celery import signature, group
-
-from price_aggregator import providers
-from price_aggregator.celery import app
-from price_aggregator import tasks
 from celery.utils.log import get_task_logger
 
+from price_aggregator import providers
+from price_aggregator import tasks
+from price_aggregator.celery import app
 from price_aggregator.models import Currency
 
 logger = get_task_logger(__name__)
