@@ -379,13 +379,13 @@ class AggregatedPrice(models.Model):
             'moving_averages': self.calculate_moving_averages(),
             'currency_name': self.currency.name,
             'aggregation_date_time': self.date_time,
-            'aggregated_usd_price': float('{:.8f}'.format(self.aggregated_price))
+            'aggregated_usd_price': float('{:.8f}'.format(self.aggregated_price)),
+            'number_of_providers': float('{:.0f}'.format(self.providers)),
+            'standard_deviation': float('{:.8f}'.format(self.standard_deviation)),
+            'variance': float('{:.8f}'.format(self.variance))
         }
 
         if style == 'full':
-            serialized_data['number_of_providers'] = float('{:.0f}'.format(self.providers))
-            serialized_data['standard_deviation'] = float('{:.8f}'.format(self.standard_deviation))
-            serialized_data['variance'] = float('{:.8f}'.format(self.variance))
             serialized_data['prices_used'] = [
                 resp.serialize() for resp in self.used_responses.all()
             ]
