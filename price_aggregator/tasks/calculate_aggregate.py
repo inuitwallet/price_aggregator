@@ -50,7 +50,7 @@ def calculate_aggregate(currency_pk):
     aggregated_price = AggregatedPrice.objects.create(
         currency=currency,
         aggregated_price=np.mean(cleaned_values),
-        providers=len(cleaned_values),
+        providers=len(cleaned_responses),
         standard_deviation=np.std(cleaned_values),
         variance=np.var(cleaned_values)
     )
