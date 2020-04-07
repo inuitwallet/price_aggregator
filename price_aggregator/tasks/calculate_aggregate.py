@@ -89,10 +89,15 @@ def calculate_weighted_mean(currency, responses):
         # remove outliers
         cleaned_weighted_responses = remove_outliers(weighted_responses)
         # find the weighted mean
-        weighted_mean = np.average(
-            [float(resp.value) for resp in cleaned_weighted_responses],
-            weights=[float(resp.volume) for resp in cleaned_weighted_responses]
-        )
+        try:
+            weighted_mean = np.average(
+                [float(resp.value) for resp in cleaned_weighted_responses],
+                weights=[float(resp.volume) for resp in cleaned_weighted_responses]
+            )
+        except ZeroDivisionError:
+            weighted_mean = np.average(
+                [float(resp.value) for resp in cleaned_weighted_responses]
+            )
 
         # the next step expects a list of response objects so we make one now
         # first we assign a special Provider to the result
