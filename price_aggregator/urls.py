@@ -38,5 +38,6 @@ urlpatterns = [
         'provider/<str:provider>/price/<str:currency_code>/<str:date_time>',
         views.ProviderSpotPriceView.as_view(),
         name='provider_spot_price'
-    )
+    ),
+    path('arbitrage/<str:currency_code>', views.ArbitrageOpportunitiesView.as_view(), name='arbitrage')
 ]

@@ -8,7 +8,8 @@ from django.urls import reverse
 from django.utils.timezone import make_aware, now
 from django.views import View
 
-from price_aggregator.models import Currency, AggregatedPrice, Provider, ProviderResponse, ProviderFailure
+from price_aggregator.models import Currency, AggregatedPrice, Provider, ProviderResponse, ProviderFailure, \
+    ArbitrageOpportunity
 
 
 class IndexView(View):
@@ -56,6 +57,11 @@ class IndexView(View):
                             'url': '{}/provider/<provider>/price/<currency_code>/<date_time>'.format(request_url),
                             'url_function': 'Display single provider data for the currency specified by <currency_code> '
                                             'at the date_time given by <date_time> (yyyy-mm-ddTHH:MM:SS)'
+                        },
+                        {
+                            'url': '{}/arbitrage/<currency_code>'.format(request_url),
+                            'url_function': 'Display the ten most recent arbitrage opportunities for the currency '
+                                            'specified by <currency_code>'
                         }
                     ]
                 }
@@ -385,3 +391,21 @@ class PriceChangesView(View):
         currency = get_object_or_404(Currency, code__iexact=currency_code)
 
         return JsonResponse(currency.currency_movements())
+
+
+class ArbitrageOpportunitiesView(View):
+    @staticmethod
+    def get(request, currency_code):
+        if currency_code == '<currency_code>':
+            # this is a link from the front page. Allow user to choose a currency code to select
+            return redirect('currency_choose', path='{}|arbitrage|{}')
+
+        # Bittrex still calls USNBT NBT!
+        # TODO - handle multiple codes on model?
+        if currency_code.lower() == 'nbt':
+            currency_code = 'usnbt'
+
+        # get the currency
+        currency = get_object_or_404(Currency, code__iexact=currency_code)
+
+        return JsonResponse(currency.arbitrage_opportunities())

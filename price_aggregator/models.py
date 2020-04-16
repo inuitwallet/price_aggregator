@@ -74,6 +74,23 @@ class Currency(models.Model):
 
         return movements
 
+    def arbitrage_opportunities(self):
+        """
+        Return a serialization of the last 10 arbitrage opportunities for this currency
+        """
+        return {
+            'currency': self.code.upper(),
+            'arbitrage_opportunities': [
+                {
+                    'date_time': op.date_time,
+                    'low_exchange_pair': op.low_provider_response.provider.name,
+                    'low_price': op.low_provider_response.value,
+                    'high_exchange_pair': op.high_provider_response.provider.name,
+                    'high_price': op.high_provider_response.value
+                } for op in self.arbitrageopportunity_set.all()[:10]
+            ]
+        }
+
 
 class ProviderBlackList(models.Model):
     currency = models.ForeignKey(
@@ -454,5 +471,11 @@ class ArbitrageOpportunity(models.Model):
         on_delete=models.CASCADE,
         related_name='high_provider_response'
     )
+    
+    def __str__(self):
+        return f'{self.date_time} - {self.currency}'
+
+    class Meta:
+        ordering = ['-date_time']
 
 

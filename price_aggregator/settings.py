@@ -152,7 +152,7 @@ LOGGING = {
 }
 
 CELERY_RESULT_BACKEND = 'django-db'
-CELERY_TASK_SOFT_TIME_LIMIT = 60
+CELERY_TASK_SOFT_TIME_LIMIT = 900
 
 CELERY_TASK_ROUTES = {
     'price_aggregator.tasks.periodic_tasks.*': {'queue': 'periodic_tasks'},
