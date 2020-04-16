@@ -157,6 +157,7 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60
 CELERY_TASK_ROUTES = {
     'price_aggregator.tasks.periodic_tasks.*': {'queue': 'periodic_tasks'},
     'price_aggregator.tasks.calculate_aggregate.calculate_aggregate': {'queue': 'aggregates'},
+    'price_aggregator.tasks.calculate_arbitrage.calculate_arbitrage': {'queue': 'arbitrage'},
     'price_aggregator.tasks.get_provider_response.get_provider_response': {'queue': 'provider_responses'},
     'price_aggregator.tasks.get_ccxt_response.get_ccxt_response': {'queue': 'ccxt_responses'},
 }

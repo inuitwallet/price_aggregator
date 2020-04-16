@@ -2,6 +2,7 @@ import logging
 from decimal import Decimal
 
 import requests
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,10 @@ class BitcoinAverage(object):
         logger.info('BitcoinAverage: Getting prices')
 
         r = requests.get(
-            url='https://apiv2.bitcoinaverage.com/indices/global/ticker/short?fiat=USD'
+            url='https://apiv2.bitcoinaverage.com/indices/global/ticker/BTCUSD',
+            headers={
+                'x-ba-key': settings.BITCOINAVERAGE_API_KEY
+            }
         )
 
         if r.status_code != requests.codes.ok:

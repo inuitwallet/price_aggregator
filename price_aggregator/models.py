@@ -435,6 +435,24 @@ class NuMarketMaker(models.Model):
     )
 
 
-
+class ArbitrageOpportunity(models.Model):
+    date_time = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True
+    )
+    currency = models.ForeignKey(
+        Currency,
+        on_delete=models.CASCADE
+    )
+    low_provider_response = models.ForeignKey(
+        ProviderResponse,
+        on_delete=models.CASCADE,
+        related_name='low_provider_response'
+    )
+    high_provider_response = models.ForeignKey(
+        ProviderResponse,
+        on_delete=models.CASCADE,
+        related_name='high_provider_response'
+    )
 
 

@@ -42,14 +42,16 @@ def calculate_aggregate(currency_pk):
     # we want the values in order to use the numpy functions below
     cleaned_values = [float(resp.value) for resp in cleaned_responses if resp.value > Decimal(0)]
 
+    aggregated_price = np.mean(cleaned_values)
+
     logger.info(
-        'Got an aggregated price of {} for {}'.format(np.mean(cleaned_values), currency)
+        'Got an aggregated price of {} for {}'.format(aggregated_price, currency)
     )
 
     # create the aggregated price object
     aggregated_price = AggregatedPrice.objects.create(
         currency=currency,
-        aggregated_price=np.mean(cleaned_values),
+        aggregated_price=aggregated_price,
         providers=len(cleaned_responses),
         standard_deviation=np.std(cleaned_values),
         variance=np.var(cleaned_values)

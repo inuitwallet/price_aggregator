@@ -95,3 +95,28 @@ def calculate_aggregates():
     aggregate_group = group(aggregate_list)
     # then run the group
     aggregate_group.apply_async()
+
+
+@app.task
+def calculate_arbitrages():
+    """
+    Use the latest provider responses to calculate arbitrage opportunities
+    """
+    arbitrage_list = []
+
+    for currency in Currency.objects.all():
+        # build the signature for these calculations
+        arbitrage_sig = signature(
+            getattr(tasks, 'calculate_arbitrage'),
+            kwargs={
+                'currency_pk': currency.pk
+            },
+            immutable=True
+        )
+        # append to the list of signatures
+        arbitrage_list.append(arbitrage_sig)
+
+    # turn the list of signatures into a Celery group
+    arbitrage_group = group(arbitrage_list)
+    # then run the group
+    arbitrage_group.apply_async()
