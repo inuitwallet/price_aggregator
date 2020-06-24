@@ -1,9 +1,13 @@
+import logging
 from datetime import timedelta
 
 from django.core.management import BaseCommand
+from django.core.paginator import Paginator
 from django.utils.timezone import now
 
 from price_aggregator.models import ProviderResponse
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -17,7 +21,13 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        for response in ProviderResponse.objects.filter(date_time__lte=now() - timedelta(days=int(options['days']))):
-            print(f'Deleting {response}')
-            response.delete()
+        responses = ProviderResponse.objects.filter(
+            date_time__lte=now() - timedelta(days=int(options['days']))
+        ).order_by('-date_time')
+        p = Paginator(responses, 20)
+
+        for page_num in p.page_range:
+            for response in p.page(page_num):
+                logger.info(f'Deleting {response}')
+
 
