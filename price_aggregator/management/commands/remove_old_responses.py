@@ -34,5 +34,5 @@ class Command(BaseCommand):
         for page_num in p.page_range:
             for response in p.page(page_num):
                 logger.info(f'Deleting {response}')
-
+                response.delete()
 
