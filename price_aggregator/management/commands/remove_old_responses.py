@@ -23,7 +23,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         responses = ProviderResponse.objects.filter(
             date_time__lte=now() - timedelta(days=int(options['days']))
-        ).order_by('-date_time')
+        ).order_by('date_time')
 
         logger.info(f'Deleting {responses.count()} responses')
 
