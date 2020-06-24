@@ -17,7 +17,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        for response in ProviderResponse.objects.filter(date_time__let=now() - timedelta(days=int(options['days']))):
+        for response in ProviderResponse.objects.filter(date_time__lte=now() - timedelta(days=int(options['days']))):
             print(f'Deleting {response}')
             response.delete()
 
