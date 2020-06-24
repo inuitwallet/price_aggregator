@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import timedelta
 
 from django.core.management import BaseCommand
@@ -26,6 +27,7 @@ class Command(BaseCommand):
         ).order_by('date_time')
 
         logger.info(f'Deleting {responses.count()} responses')
+        time.sleep(10)
 
         p = Paginator(responses, 20)
 
