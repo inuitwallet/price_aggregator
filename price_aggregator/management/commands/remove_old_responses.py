@@ -27,7 +27,7 @@ class Command(BaseCommand):
         ).order_by('date_time')
 
         logger.info(f'Deleting {responses.count()} responses')
-        time.sleep(10)
+        time.sleep(2)
 
         p = Paginator(responses, 20)
 
