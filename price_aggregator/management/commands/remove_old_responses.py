@@ -12,11 +12,12 @@ class Command(BaseCommand):
             '-d',
             '--days',
             help='how many days ago to delete responses before',
-            dest='days'
+            dest='days',
+            default=365
         )
 
     def handle(self, *args, **options):
-        for response in ProviderResponse.objects.filter(date_time__let=now() - timedelta(days=options['days'])):
+        for response in ProviderResponse.objects.filter(date_time__let=now() - timedelta(days=int(options['days']))):
             print(f'Deleting {response}')
             response.delete()
 
