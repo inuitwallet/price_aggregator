@@ -38,5 +38,5 @@ class Command(BaseCommand):
                     agg_price.used_response.remove(response)
 
                 logger.info(f'Deleting {response}')
-                response.delete()
+                logger.info(response.delete())
 
