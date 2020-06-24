@@ -6,7 +6,7 @@ from django.core.management import BaseCommand
 from django.core.paginator import Paginator
 from django.utils.timezone import now
 
-from price_aggregator.models import ProviderResponse
+from price_aggregator.models import ProviderResponse, AggregatedPrice
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +33,10 @@ class Command(BaseCommand):
 
         for page_num in p.page_range:
             for response in p.page(page_num):
+                for agg_price in AggregatedPrice.objects.filter(used_responses=response):
+                    logger.info(f'Removing response from {agg_price}')
+                    agg_price.used_response.remove(response)
+
                 logger.info(f'Deleting {response}')
                 response.delete()
 
