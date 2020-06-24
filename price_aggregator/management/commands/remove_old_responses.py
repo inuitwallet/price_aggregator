@@ -29,14 +29,11 @@ class Command(BaseCommand):
         logger.info(f'Deleting {responses.count()} responses')
         time.sleep(2)
 
-        p = Paginator(responses, 20)
+        for response in responses:
+            for agg_price in AggregatedPrice.objects.filter(used_responses=response):
+                logger.info(f'Removing response from {agg_price}')
+                agg_price.used_response.remove(response)
 
-        for page_num in p.page_range:
-            for response in p.page(page_num):
-                for agg_price in AggregatedPrice.objects.filter(used_responses=response):
-                    logger.info(f'Removing response from {agg_price}')
-                    agg_price.used_response.remove(response)
-
-                logger.info(f'Deleting {response}')
-                logger.info(response.delete())
+            logger.info(f'Deleting {response}')
+            logger.info(response.delete())
 
