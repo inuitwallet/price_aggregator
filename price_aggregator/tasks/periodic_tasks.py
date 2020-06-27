@@ -1,11 +1,14 @@
+from datetime import timedelta
+
 import ccxt
 from celery import signature, group
 from celery.utils.log import get_task_logger
+from django.utils.timezone import now
 
 from price_aggregator import providers
 from price_aggregator import tasks
 from price_aggregator.celery import app
-from price_aggregator.models import Currency
+from price_aggregator.models import Currency, ProviderResponse
 
 logger = get_task_logger(__name__)
 
@@ -120,3 +123,21 @@ def calculate_arbitrages():
     arbitrage_group = group(arbitrage_list)
     # then run the group
     arbitrage_group.apply_async()
+
+
+@app.task
+def remove_old_provider_responses():
+    """
+    We only keep the last 30 days of provider responses to save on disk space.
+    This method removes provider responses older than 30 days and is intended to run nightly
+    PostgreSQL autovacuum should keep disk usage fairly constant with this in place
+    """
+    responses = ProviderResponse.objects.filter(
+        date_time__lte=now() - timedelta(days=30)
+    ).order_by('date_time')
+
+    logger.info(f'Deleting {responses.count()} responses')
+
+    for response in responses:
+        logger.info(f'Deleting {response}')
+        logger.info(response.delete())
