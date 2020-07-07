@@ -18,7 +18,7 @@ class Command(BaseCommand):
             '--days',
             help='how many days ago to delete responses before',
             dest='days',
-            default=365
+            default=30
         )
 
     def handle(self, *args, **options):
@@ -30,10 +30,6 @@ class Command(BaseCommand):
         time.sleep(2)
 
         for response in responses:
-            # for agg_price in AggregatedPrice.objects.filter(used_responses=response):
-            #     logger.info(f'Removing response from {agg_price}')
-            #     agg_price.used_responses.remove(response)
-
             logger.info(f'Deleting {response}')
             logger.info(response.delete())
 
