@@ -18,7 +18,7 @@ def get_latest_agg_price(currency):
         return 1
 
     current_agg_price = AggregatedPrice.objects.filter(
-        currency__code=currency.upper()
+        currency__code__iexact=currency
     ).first()
 
     if current_agg_price is None:
@@ -50,6 +50,9 @@ def get_ccxt_response(exchange):
     prices = []
 
     for market in markets:
+        if market['base'] is None or market['quote'] is None:
+            continue
+
         if market['base'].upper() not in currency_check_list:
             continue
 
@@ -106,7 +109,7 @@ def get_ccxt_response(exchange):
                         'price': last_base_price_usd,
                         'market_price': last_price,
                         'provider': '{}_{}_{}_market'.format(exchange.title(), market['base'], market['quote']),
-                        'volume': base_volume_usd
+                        'volume': base_volume_usd or quote_volume_usd
                     }
                 )
             if coin.code.upper() == market['quote'].upper():
@@ -116,7 +119,7 @@ def get_ccxt_response(exchange):
                         'price': last_quote_price_usd,
                         'market_price': 1 / last_price,
                         'provider': '{}_{}_{}_market'.format(exchange.title(), market['base'], market['quote']),
-                        'volume': quote_volume_usd
+                        'volume': quote_volume_usd or base_volume_usd
                     }
                 )
 
