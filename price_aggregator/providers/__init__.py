@@ -2,7 +2,6 @@ from .bitcoinaverage import BitcoinAverage
 from .bitfinex import Bitfinex
 from .bitstamp import BitStamp
 from .bitstamp_eur import BitStampEur
-from .ccxt import CCXT
 from .coinapi import CoinApi
 from .coinbase import CoinBase
 from .coindesk import CoinDesk
@@ -15,7 +14,6 @@ from .cryptonator import Cryptonator
 from .currencylayer import CurrencyLayer
 from .ecb_europa import EcbEuropa
 from .exchangeratelab import ExchangeRateLab
-from .fixer import Fixer
 from .nu import Nu
 from .openexchangerates import OpenExchangeRates
 
@@ -24,7 +22,6 @@ __all__ = [
     'Bitfinex',
     'BitStamp',
     'BitStampEur',
-    'CCXT',
     'CoinApi',
     'CoinBase',
     'CoinDesk',
@@ -37,7 +34,6 @@ __all__ = [
     'CurrencyLayer',
     'EcbEuropa',
     'ExchangeRateLab',
-    'Fixer',
     'Nu',
     'OpenExchangeRates',
 ]
