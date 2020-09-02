@@ -43,9 +43,11 @@ INSTALLED_APPS = [
     'price_aggregator',
     'django_celery_beat',
     'django_celery_results',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -53,6 +55,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+INTERNAL_IPS = [
+    '127.0.0.1',
 ]
 
 ROOT_URLCONF = 'price_aggregator.urls'
@@ -161,3 +167,9 @@ CELERY_TASK_ROUTES = {
     'price_aggregator.tasks.get_provider_response.get_provider_response': {'queue': 'provider_responses'},
     'price_aggregator.tasks.get_ccxt_response.get_ccxt_response': {'queue': 'ccxt_responses'},
 }
+
+# Load local_settings
+try:
+    from price_aggregator.local_settings import *  # noqa
+except ImportError:
+    print("Could not import price_aggregator.local_settings, using defaults!")
