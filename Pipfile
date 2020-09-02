@@ -17,9 +17,10 @@ django-timezone-field = "*"
 gunicorn = "*"
 numpy = "*"
 psycopg2-binary = "*"
+django-debug-toolbar = "*"
 
 [dev-packages]
-django-debug-toolbar = "*"
+
 
 [requires]
 python_version = "3.8"
