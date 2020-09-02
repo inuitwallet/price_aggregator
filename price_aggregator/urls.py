@@ -41,3 +41,9 @@ urlpatterns = [
     ),
     path('arbitrage/<str:currency_code>', views.ArbitrageOpportunitiesView.as_view(), name='arbitrage')
 ]
+
+
+import debug_toolbar  # noqa
+urlpatterns = [
+    path('__debug__/', include(debug_toolbar.urls)),
+] + urlpatterns
