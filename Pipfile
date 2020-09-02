@@ -1,0 +1,25 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+amqp = "*"
+boto3 = "*"
+bpython = "*"
+ccxt = "*"
+celery = "*"
+Django = "*"
+django-celery-beat = "*"
+django-celery-results = "*"
+django-storages = "*"
+django-timezone-field = "*"
+gunicorn = "*"
+numpy = "*"
+psycopg2-binary = "*"
+
+[dev-packages]
+django-debug-toolbar = "*"
+
+[requires]
+python_version = "3.8"
