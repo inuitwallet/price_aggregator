@@ -132,7 +132,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+#STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 LOGGING = {
     'version': 1,
@@ -161,6 +161,7 @@ CELERY_RESULT_BACKEND = 'django-db'
 CELERY_TASK_SOFT_TIME_LIMIT = 900
 
 CELERY_TASK_ROUTES = {
+    'celery.*': {'queue': 'celery'},
     'price_aggregator.tasks.periodic_tasks.*': {'queue': 'periodic_tasks'},
     'price_aggregator.tasks.calculate_aggregate.calculate_aggregate': {'queue': 'aggregates'},
     'price_aggregator.tasks.calculate_arbitrage.calculate_arbitrage': {'queue': 'arbitrage'},
